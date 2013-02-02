@@ -17,7 +17,7 @@
 
 webOps.proxy = 
 {
-    URL: 'http://flashcolombia.com/webops/proxy.php',
+    URL: 'http://test.webops.com:8080/proxy/proxy.php',
     processMethod: function(service)
     {
         var parameters = service.parameters;            

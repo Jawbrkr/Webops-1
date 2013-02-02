@@ -1001,6 +1001,8 @@ function caseDetailFull()
                         else
                         {
                             //alert('offLine');
+                            var caseIdOff = $('.caseDetailListID').html();
+                            $('#caseNoSave').html(caseIdOff);
                             $('#lblError').html('Error');
                             $.executeFunction(onSuccess);
                         }

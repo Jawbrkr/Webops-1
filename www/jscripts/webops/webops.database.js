@@ -16,7 +16,7 @@
 
 webOps.database =
 {
-    version: '1.123',
+    version: '1.124',
     sqlDatabase: null,
     versionSchema:
     {
@@ -70,7 +70,7 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS hospitals(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, warehouseId INTEGER)');
 
                     $.log('CREATE TABLE addresses');
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS addresses(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, replName TEXT, replTo INTEGER, shipName TEXT, shipTo INTEGER)');
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS addresses(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, replName TEXT, replTo INTEGER, shipName TEXT, shipTo INTEGER, espacio TEXT)');
 
                     $.log('CREATE TABLE productSystems');
                     tx.executeSql('CREATE TABLE IF NOT EXISTS productSystems(userId INTEGER NOT NULL, description TEXT, id INTEGER NOT NULL, name TEXT NOT NULL)');
@@ -347,7 +347,7 @@ webOps.database.tables.customers =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT customer FROM customers';
+            var sql = 'SELECT customer FROM customers LIMIT 1';
             var params = [];
 
             webOps.database.commands.executeReader(sql, params,
@@ -1232,7 +1232,7 @@ webOps.database.tables.usage =
         return $.Deferred(function(deferred)
         {
             var sql = 'INSERT INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 0, new Date()];
+            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 0, new Date(), espacio];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
@@ -1253,7 +1253,7 @@ webOps.database.tables.usage =
         return $.Deferred(function(deferred)
         {
             var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 1, new Date()];
+            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 1, new Date(), espacio];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
@@ -2438,9 +2438,9 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT INTO addresses (userId, id, name, replName, replTo, shipName, shipTo) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            var sql = 'INSERT INTO addresses (userId, id, name, replName, replTo, shipName, shipTo, espacio) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
             var params = [userId];
-            var properties = ['id', 'name', 'replName', 'replTo', 'shipName', 'shipTo'];
+            var properties = ['id', 'name', 'replName', 'replTo', 'shipName', 'shipTo', 'espacio'];
 
             webOps.database.commands.executeNonQueryMultiple(sql, data, params, properties, [],
                 function()
@@ -2460,7 +2460,7 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo FROM addresses WHERE userId = ?';
+            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo, espacio FROM addresses WHERE userId = ?';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -2487,7 +2487,7 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo FROM addresses WHERE userId = ? AND replTo = 1';
+            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo, espacio FROM addresses WHERE userId = ? AND replTo = 1';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -2515,7 +2515,7 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo FROM addresses WHERE userId = ? AND shipTo = 1';
+            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo, espacio FROM addresses WHERE userId = ? AND shipTo = 1';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,

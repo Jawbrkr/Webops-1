@@ -297,7 +297,7 @@ function setupLinks()
         //$.log('funciono');
         timerHandle = setTimeout(function()
 		{
-            $.alert('Inactive Use: Sorry, but this application has not been used in the last 30 minutes and therefore you had to be logged out.');
+            //$.alert('Inactive Use: Sorry, but this application has not been used in the last 30 minutes and therefore you had to be logged out.');
             logout();
             $('#txtPassword').val('');
             jQT.goToRight('#login');
@@ -773,6 +773,17 @@ function setupLinks()
 			    var surgeryTimePicker = $('#lblCaseDetailListSurgeryTime').val();
 			    surgeryTime.val(surgeryTimePicker);*/
 			});
+
+			var caseIdOff = $('.caseDetailListID').html();
+
+			if ($('#caseNoSave').html() == caseIdOff || $('.caseDetailListID').html().length < 3 ) 
+	    	{
+	    		$('#noSave').show();
+	    	}
+	    	else
+	    	{
+	    		$('#noSave').hide();
+	    	}
 
 			if(($('#lblCaseDetailListCaseType').html() == 'Info Case' &&  $('#lblCaseDetailListStatus').html() == 'Reconciled') || ($('#lblCaseDetailListCaseType').html() == 'Loaner Case' &&  $('#lblCaseDetailListStatus').html() == 'Shipped'))
 			{
@@ -2165,34 +2176,34 @@ function setupLinks()
 	    
 
 
-		if ($('#lblCaseDetailListImagingListTitle').html() == "PreOp")
-	    {
-	        var caseId = $('#caseDetailList .caseDetailListID').html();
-	        var category = webOps.database.tables.casePhotoList.categories.PRE_OP;	       
+			if ($('#lblCaseDetailListImagingListTitle').html() == "PreOp")
+			{
+				var caseId = $('#caseDetailList .caseDetailListID').html();
+				var category = webOps.database.tables.casePhotoList.categories.PRE_OP;	
 
-	        $('#caseDetailList_imaging_List ul.imagingList').empty();
-	        new caseView().getPhotoList(caseId, category, function(photoList)
-	        {
+				$('#caseDetailList_imaging_List ul.imagingList').empty();
+				new caseView().getPhotoList(caseId, category, function(photoList)
+				{
 
-	        		//alert('Lista de imágenes 1');			
+				//alert('Lista de imágenes 1');
 					loadPhotoList('PreOp', photoList);
 					jQT.goToRight('#caseDetailList_imaging');
-					backImgingList();		            
-	        });
-	    }
-	    else
-	    {
-	    	var caseId = $('#caseDetailList .caseDetailListID').html();
-	        var category2 = webOps.database.tables.casePhotoList.categories.POST_OP;	        
+					backImgingList();	
+				});
+				}
+				else
+				{
+				var caseId = $('#caseDetailList .caseDetailListID').html();
+				var category2 = webOps.database.tables.casePhotoList.categories.POST_OP;	
 
-	        $('#caseDetailList_imaging_List ul.imagingList').empty();
-	        new caseView().getPhotoList(caseId, category2, function(photoList)
-	        {			
+				$('#caseDetailList_imaging_List ul.imagingList').empty();
+				new caseView().getPhotoList(caseId, category2, function(photoList)
+				{	
 					loadPhotoList('PostOp', photoList);
 					jQT.goToRight('#caseDetailList_imaging');
-					backImgingList();		            
-	        });
-	    }
+					backImgingList();	
+				});
+			}
 	}
 
 	function backImgingList()
@@ -2982,8 +2993,14 @@ function loadListCaseView()
         for (var i = 0; i < (data || []).length; i++)
         {
             var dataItem = data[i];
-            var dataItemInfo = li.format(dataItem.id, dataItem.replName);
-
+            if(dataItem.shipTo == '1')
+            {
+            	var dataItemInfo = li.format(dataItem.id, dataItem.name);
+            }
+            else
+            {
+            	var dataItemInfo = li.format(dataItem.id, dataItem.html(''))
+            }
             ulUsageInventoryLocation.append($(dataItemInfo));
             ulUsageInventoryLoc.append($(dataItemInfo));
         }
@@ -2999,11 +3016,18 @@ function loadListCaseView()
 
     new usage().getShipTo(function(data)
     {
-        var li = '<li><a href="#" dataid="{0}"><label>{1}</label></a></li>'
+        var li = '<li style="height:14px"><a href="#" dataid="{0}"><label>{1}</label></a></li>'
         for (var i = 0; i < (data || []).length; i++)
         {
             var dataItem = data[i];
-            var dataItemInfo = li.format(dataItem.id, dataItem.shipName);
+            if(dataItem.shipTo == '1')
+            {
+            	var dataItemInfo = li.format(dataItem.id, dataItem.name);
+            }
+            else
+            {
+            	var dataItemInfo = li.format('')
+            }
 
             ulUsageShipToLocation.append($(dataItemInfo));
             ulUsageShipToLoc.append($(dataItemInfo));
@@ -3380,14 +3404,6 @@ function loadCaseViewDetail(caseDetail)
 {
     if (!caseDetail)
         return;
-    if ($('#lblError').html() == 'Error') 
-    	{
-    		$('#noSave').css('display','block');
-    	}
-    	else
-    	{
-    		$('#noSave').css('display','none');
-    	}
     	
 
     $('label.caseDetailListID').html(caseDetail.id);
@@ -3604,71 +3620,88 @@ function conditionLoad()
         case 'New':
             conditionLoadStatus(statusList, ['New', 'Reconciled', 'Cancelled']);
             $('#caseDetailListUsage').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListUsage small').css({'width':'50%'});
             $('#caseDetailListPricing').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPricing small').css({'width':'50%'});
             $('#caseDetailListAssignedKits').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListAssignedKits small').css({'width':'50%'});
             /*$('#assigKits').hide();*/
             break;
         case 'Kits Assigned':
             conditionLoadStatus(statusList, ['Kits Assigned', 'Cancelled']);
             $('#txtCaseDetailListSurgeryDate').attr('disabled', true);
             $('#txtCaseDetailListSurgeryTime').attr('disabled', true);
-            $('#caseDetailListsurgeryTime').removeClass('next').find('a').removeAttr('href').addClass('disabled');
-            $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');//.removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure small').css({'width':'50%'});
             $('#caseDetailListProductSystemCategory').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProductSystemCategory small').css({'width':'50%'});
             $('#caseDetailListUsage').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListUsage small').css({'width':'50%'});
             $('#caseDetailListPricing').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
-            $('#caseDetailListAssignedKits').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPricing small').css({'width':'50%'});
+
             /*$('#assigKits a').removeAttr('href');*/
             break;
         case 'Assembled':
             conditionLoadStatus(statusList, ['Assembled', 'Cancelled']);
             $('#txtCaseDetailListSurgeryDate').attr('disabled', true);
             $('#txtCaseDetailListSurgeryTime').attr('disabled', true);
-            $('#caseDetailListsurgeryTime').addClass('next').find('a').attr('href', '#caseDetailList_surgeryTime').removeClass('disabled');
             $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure small').css({'width':'50%'});
+
             $('#caseDetailListProductSystemCategory').removeClass('next').find('a').removeAttr('href').addClass('disabled');
             $('#caseDetailListUsage').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListUsage small').css({'width':'50%'});
             $('#caseDetailListPricing').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPricing small').css({'width':'50%'});
             /*$('#assigKits a').removeAttr('href');*/
             break;
         case 'Shipped':
             conditionLoadStatus(statusList, ['Shipped', 'Cancelled']);
             $('#txtCaseDetailListSurgeryDate').attr('disabled', true);
             $('#txtCaseDetailListSurgeryTime').attr('disabled', true);
-            $('#caseDetailListsurgeryTime').addClass('next').find('a').attr('href', '#caseDetailList_surgeryTime').removeClass('disabled');
             $('#caseDetailListHospital').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListHospital small').css({'width':'50%'});
             $('#caseDetailListPhysician').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPhysician small').css({'width':'50%'});
             $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure small').css({'width':'50%'});
             $('#caseDetailListProductSystemCategory').removeClass('next').find('a').removeAttr('href').addClass('disabled');
-            //$('#caseDetailListAssignedKits').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProductSystemCategory small').css({'width':'50%'});
     	    /*$('#assigKits a').removeAttr('href');*/
     	    break;
         case 'Returned':
             conditionLoadStatus(statusList, ['Returned', 'Cancelled']);
             $('#txtCaseDetailListSurgeryDate').attr('disabled', true);
             $('#txtCaseDetailListSurgeryTime').attr('disabled', true);
-            $('#caseDetailListsurgeryTime').addClass('next').find('a').attr('href', '#caseDetailList_surgeryTime').removeClass('disabled');
             $('#caseDetailListHospital').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListHospital small').css({'width':'50%'});
             $('#caseDetailListPhysician').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPhysician small').css({'width':'50%'});
             $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure small').css({'width':'50%'});
             $('#caseDetailListProductSystemCategory').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProductSystemCategory small').css({'width':'50%'});
             /*$('#assigKits a').removeAttr('href');*/
             break;
         case 'Checked In':
             conditionLoadStatus(statusList, ['Checked In', 'Cancelled']);
             $('#txtCaseDetailListSurgeryDate').attr('disabled', true);
             $('#txtCaseDetailListSurgeryTime').attr('disabled', true);
-            $('#caseDetailListsurgeryTime').addClass('next').find('a').attr('href', '#caseDetailList_surgeryTime').removeClass('disabled');
             $('#caseDetailListHospital').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListHospital small').css({'width':'50%'});
             $('#caseDetailListPhysician').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPhysician small').css({'width':'50%'});
             $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure small').css({'width':'50%'});
             $('#caseDetailListProductSystemCategory').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProductSystemCategory small').css({'width':'50%'});
             /*$('#assigKits a').removeAttr('href');*/
             break;
         case 'Reconciled':
             conditionLoadStatus(statusList, ['Reconciled', 'New', 'Cancelled']);
             $('#caseDetailListCreatePreferences').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
-            $('#caseDetailListAssignedKits').removeClass('next').hide().find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListCreatePreferences small').css({'width':'50%'});
             /*$('#assigKits').hide();*/
             break;
         case 'Closed':
@@ -3676,16 +3709,24 @@ function conditionLoad()
             $('#caseDetailListSalesRep').removeClass('next').find('a').removeAttr('href').addClass('disabled');
             $('#txtCaseDetailListSurgeryDate').attr('disabled', true);
             $('#txtCaseDetailListSurgeryTime').attr('disabled', true);
-            $('#caseDetailListsurgeryTime').addClass('next').find('a').attr('href', '#caseDetailList_surgeryTime').removeClass('disabled');
             $('#caseDetailListHospital').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListHospital small').css({'width':'50%'});
             $('#caseDetailListPhysician').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPhysician small').css({'width':'50%'});
             $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure small').css({'width':'50%'});
             $('#caseDetailListProductSystemCategory').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProductSystemCategory small').css({'width':'50%'});
             $('#caseDetailListPatientInfo').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPatientInfo small').css({'width':'50%'});
             $('#caseDetailListCreatePreferences').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListCreatePreferences small').css({'width':'50%'});
             $('#caseDetailListUsage').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListUsage small').css({'width':'50%'});
             $('#caseDetailListPricing').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPricing small').css({'width':'50%'});
             $('#caseDetailListImaging').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListImaging small').css({'width':'50%'});
             /*$('#assigKits').hide();
             $('#statusCheck a').removeAttr('href');*/
             break;
@@ -3693,21 +3734,31 @@ function conditionLoad()
             conditionLoadStatus(statusList, ['Cancelled', 'New', 'Reconciled']);
             $('#txtCaseDetailListSurgeryDate').attr('disabled', true);
             $('#txtCaseDetailListSurgeryTime').attr('disabled', true);
-            $('#caseDetailListsurgeryTime').addClass('next').find('a').attr('href', '#caseDetailList_surgeryTime').removeClass('disabled');
             $('#caseDetailListHospital').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListHospital small').css({'width':'50%'});
             $('#caseDetailListPhysician').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPhysician small').css({'width':'50%'});
             $('#caseDetailListProcedure').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProcedure small').css({'width':'50%'});
             $('#caseDetailListProductSystemCategory').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListProductSystemCategory small').css({'width':'50%'});
             $('#caseDetailListPatientInfo').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPatientInfo small').css({'width':'50%'});
             $('#txtCaseDetailListPO').hide();
             $('#caseDetailListCreatePreferences').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListCreatePreferences small').css({'width':'50%'});
             $('#caseDetailListUsage').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListUsage small').css({'width':'50%'});
             $('#caseDetailListPricing').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListPricing small').css({'width':'50%'});
             $('#caseDetailListImaging').removeClass('next').find('a').removeAttr('href').addClass('disabled');
+            $('#caseDetailListImaging small').css({'width':'50%'});
             /*$('#assigKits a').removeAttr('href');*/
             break;
     }
 }
+
+
 
 function conditionLoadStatus(list, params)
 {

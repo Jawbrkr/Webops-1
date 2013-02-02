@@ -55,7 +55,7 @@
                                             User Name:
                                         </td>
                                         <td>
-                                            <input type="text" id="txtUserName" name="txtUserName" placeholder="Username"  maxlength="25" value="salesrepone" autocapitalize="off" autocorrect="off" />
+                                            <input type="text" id="txtUserName" name="txtUserName" placeholder="Username"  maxlength="25" value="sr1" autocapitalize="off" autocorrect="off" />
                                         </td>
                                     </tr>
                                 </table>
@@ -67,7 +67,7 @@
                                             Password:
                                         </td>
                                         <td>
-                                            <input type="password" id="txtPassword" name="txtPassword" placeholder="Password" maxlength="25" value="salesrepone" />
+                                            <input type="password" id="txtPassword" name="txtPassword" placeholder="Password" maxlength="25" value="sr1" />
                                         </td>
                                     </tr>
                                 </table>
@@ -593,7 +593,7 @@
 				<a href="#" class="cancelCustom" id="btnCaseDetailListBack"></a>
                 <a href="#" class="save" id="btnCaseDetailListSavePostACase"></a>
                 <a href="#" class="save" id="btnCaseDetailListSaveCaseView"></a>
-                <h1>Case #<label class="caseDetailListID"></label> - <span id="dateDetail"></label></h1>
+                <h1>Case #<label class="caseDetailListID"></label><small id="noSave">*</small> - <span id="dateDetail"></span></h1>
             </header>
             <section>
                 <div class="background">
@@ -742,6 +742,7 @@
                             <li class="next" id="error" style="display:none">
                                 <a href="#" id="error2">
                                     <label id="lblError"></label>
+                                    <label id="caseNoSave"></label>
                                 </a>
                             </li>
                         </ul>
