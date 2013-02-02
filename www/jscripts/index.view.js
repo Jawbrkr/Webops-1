@@ -2012,6 +2012,7 @@ function setupLinks()
 				{
 					background.hide();				
 					loadPhotoList('PreOp', photoList);
+					$('.imageView').css('display','block');
 	            	jQT.goToLeft('#caseDetailList_imaging_List');
 
 				}, 1000);
@@ -2038,6 +2039,7 @@ function setupLinks()
 				{
 					background.hide();				
 					loadPhotoList('PostOp', photoList);
+					$('.imageView').css('display','block');
 	            	jQT.goToLeft('#caseDetailList_imaging_List');
 
 				}, 1000);
@@ -2045,6 +2047,8 @@ function setupLinks()
 	        });
 	    }
 	});
+
+	
 	
 	//$('#caseDetailList_imaging_List ul.imagingList li > a').live('tap', function(e)
 	//{
@@ -2066,6 +2070,13 @@ function setupLinks()
 	    var photoID = $(this).attr('dataid');
 	    var photoName = $(this).find('.tdName').text();
 	    var caseId = $('#caseDetailList .caseDetailListID').html();
+	    var img = $(this).find('img').clone();
+
+	    		
+	    	
+
+	    $('#lblCaseDetailListImagingViewName').html(photoName);
+	    $('#caseDetailList_imaging_view .imageView').append(img);
 
 	    if ($('#lblCaseDetailListImagingListTitle').text() == 'PreOp')
 	    {
@@ -2089,7 +2100,9 @@ function setupLinks()
 	        new caseView().getPhotoList(caseId, category, function(photoList)
 	        {
 	            //$('.flexslider').flexslider();
+
 	            loadPhotoListView('PreOp', photoList);
+	            $('#caseDetailList_imaging_view ul.slides li').css('display','none');
 	            jQT.goToLeft('#caseDetailList_imaging_view');
 	        });
 	    }
@@ -2102,6 +2115,7 @@ function setupLinks()
 	        {
 	            //$('.flexslider').flexslider();
 	            loadPhotoListView('PostOp', photoList);
+	            //if($(photoName) ==)
 	            jQT.goToLeft('#caseDetailList_imaging_view');
 	        });
 	    }
@@ -2110,6 +2124,7 @@ function setupLinks()
 	$('#btnBackImagingView').off().on('tap', function()
 	{
 	    $('#caseDetailList_imaging_view .imageView').empty();
+	    $('.imageView').css('display','block');
 	    jQT.goToRight('#caseDetailList_imaging_List');
 	});
 
@@ -2181,12 +2196,12 @@ function setupLinks()
 				var caseId = $('#caseDetailList .caseDetailListID').html();
 				var category = webOps.database.tables.casePhotoList.categories.PRE_OP;	
 
-				$('#caseDetailList_imaging_List ul.imagingList').empty();
+				$('#caseDetailList_imaging_view ul.slides').empty();
 				new caseView().getPhotoList(caseId, category, function(photoList)
 				{
 
 				//alert('Lista de imágenes 1');
-					loadPhotoList('PreOp', photoList);
+					loadPhotoListView('PreOp', photoList);
 					jQT.goToRight('#caseDetailList_imaging');
 					backImgingList();	
 				});
@@ -2196,10 +2211,10 @@ function setupLinks()
 				var caseId = $('#caseDetailList .caseDetailListID').html();
 				var category2 = webOps.database.tables.casePhotoList.categories.POST_OP;	
 
-				$('#caseDetailList_imaging_List ul.imagingList').empty();
+				$('#caseDetailList_imaging_view ul.slides').empty();
 				new caseView().getPhotoList(caseId, category2, function(photoList)
 				{	
-					loadPhotoList('PostOp', photoList);
+					loadPhotoListView('PostOp', photoList);
 					jQT.goToRight('#caseDetailList_imaging');
 					backImgingList();	
 				});
@@ -3201,7 +3216,20 @@ function loadPhotoListView(title, photoList)
     $('#lblCaseDetailListImagingViewTitle').html(title);
 
     var ul = $('#caseDetailList_imaging_view ul.slides');
-    var li = '<li><img src="data:image;base64,{1}" /></li>';
+    var li = 
+    	'<li> \
+            <a href="#" dataid="{0}"> \
+                <table> \
+                    <tr> \
+                        <td class="tdImage"> \
+                            <div> \
+                                <img src="data:image;base64,{1}" /> \
+                            </div> \
+                        </td> \
+                    </tr> \
+                </table> \
+            </a> \
+        </li>';
 
     for (var i = 0; i < (photoList || []).length; i++)
     {
@@ -3217,6 +3245,8 @@ function loadPhotoListView(title, photoList)
         arrowsFunction();
         //$('.flexslider').flexslider();
     }
+
+    
 }
 
 function getCaseView(filter, onComplete)

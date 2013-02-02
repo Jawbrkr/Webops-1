@@ -3666,7 +3666,7 @@ html, body
 
     #jqt .background .scroll .flexslider ul.slides
     {
-        background-color: white;
+         background-color: transparent;
         position: absolute;
         width: 90%;
         height: 70%;
@@ -3680,18 +3680,21 @@ html, body
         padding: 5px;
     }
 
-    #jqt .background .scroll .imageList .imageView
+    #jqt .background .scroll #imageList .imageView
     {
-        background-color: white;
+        background-color: transparent;
         position: absolute;
         left: 5px;
         right: 5px;
-        top: 5px;
+        top: 25px;
         bottom: 5px;
-        border:3px solid #777;
         text-align: center;
         vertical-align: middle;
     }
+
+
+
+
 
 #jqt ul.imagingList
 {
@@ -3736,11 +3739,13 @@ html, body
 
                 #jqt ul.imagingList li > a > table td.tdImage
                 {
+
                     height: 100%;
                     padding: 0;
                     margin: 0;
                     vertical-align: bottom;
                     border: 3px solid #777;
+
                 }
                     #jqt ul.imagingList li > a > table td.tdImage > div
                     {
