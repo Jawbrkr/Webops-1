@@ -968,7 +968,17 @@ function caseDetailFull()
                         if (webOps.database.tables.setUp.select().appModeOnLine)
                         {
                             $('#lblError').html('');
-                            webOps.methods.updateCaseHeaderNew([customer, sessionId, caseId, data.caseStatusID, data.hospitalID, data.notes, data.patient, data.physicianID, data.procTypeID, data.procDateTime, String.clear(data.assignedProdSystems).replaceAll(',', ''), data.salesRepID, data.freight, data.dob, data.sex, '0', '', '0', '0', '0', '0', '0', '', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', [], /*data.po*/'', data.ageOfPatient], function(status, data)
+
+                            /*var assignedProdSystemsArray = [];
+                            var assignedProdSystems = data.assignedProdSystems.split(',');
+
+                            for (var i = 0; i < assignedProdSystems.length; i++)
+                            {
+                                assignedProdSystemsArray.push(String.format('"{0}"', assignedProdSystems[i].split('||')[0]));
+                            }*/
+
+                            var assignedProdSystemsArray = String.format(data.assignedProdSystems).replaceAll(',', '');
+                            webOps.methods.updateCaseHeaderNew([customer, sessionId, caseId, data.caseStatusID, data.hospitalID, data.notes, data.patient, data.physicianID, data.procTypeID, data.procDateTime, assignedProdSystemsArray, data.salesRepID, data.freight, data.dob, data.sex, '0', '', '0', '0', '0', '0', '0', '', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', [], /*data.po*/'', data.ageOfPatient], function(status, data)
                             {
                                 $.log(String.format('Update Case Header New sync to server [UPDATE]: response={0}', ($.type(data) == 'object') ? Object.toJSON(data) : ''));
                                 if (status == webOps.enums.STATUS_CODE.OK)

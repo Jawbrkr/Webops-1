@@ -5,7 +5,7 @@
 // 	Autor: Oscar Cubillos <tegers77@gmail.com>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       os <tegers77@gmail.com>
 // 	Version 1.0
 // 	Create: 2012-09-02
-// 	Last Modified: 2013-01-27
+// 	Last Modified: 2013-02-04
 //
 // 	----------------------------------------------------------------
 // 	References
@@ -129,7 +129,6 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS inventoryCount(userId INTEGER NOT NULL, hospitalID INTEGER NOT NULL, catalog TEXT, lotCode TEXT, committedToServer BOOLEAN, date TEXT)');
 
                     $.log('CREATE TABLE usage');
-                    tx.executeSql('DROP TABLE usage');
                     tx.executeSql('CREATE TABLE IF NOT EXISTS usage(userId INTEGER NOT NULL, caseId INTEGER NOT NULL, catalog TEXT, lotCode TEXT, quantity INTEGER, inventoryLoc TEXT, shipTo TEXT, notes TEXT, unitListPrice FLOAT, unitActualPrice FLOAT, total FLOAT, priceException INT, externalItem BOOLEAN, warehouseId INTEGER, committedToServer BOOLEAN, date TEXT, PRIMARY KEY(userId, caseId, catalog, lotCode))');
 
                 }, function(er) { $.alert(er.message); });

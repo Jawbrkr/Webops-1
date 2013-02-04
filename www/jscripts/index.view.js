@@ -3418,8 +3418,7 @@ function clearCaseViewDetail()
 function loadCaseViewDetail(caseDetail)
 {
     if (!caseDetail)
-        return;
-    	
+        return;    	
 
     $('label.caseDetailListID').html(caseDetail.id);
     $('#lblCaseDetailListCaseType').html((caseDetail.assignedProdSystems.length > 0) ? 'Loaner Case' : 'Info Case');
@@ -3444,8 +3443,11 @@ function loadCaseViewDetail(caseDetail)
     var dataproductcatids = procAnchor.attr('dataproductcatids');
     $('#lblCaseDetailListProcedure').attr({ 'dataid': caseDetail.procTypeID, 'dataproductcatids': dataproductcatids }).html((procTypeName) ? procTypeName : 'No hay datos');
 
+    conditionLoadProductSystemCategories();
+
     //var assignedProdSystems = (caseDetail.assignedProdSystems || '').split(',');
     var assignedProdSystems = (caseDetail.assignedProdSystems.length) ? caseDetail.assignedProdSystems.split(',') : '';
+    var assignedProdSystemsCount = 0;
     for (var i = 0; i < assignedProdSystems.length; i++)
     {
         //var prodSystems = assignedProdSystems[i].replaceAll('[|]', '');
@@ -3462,10 +3464,13 @@ function loadCaseViewDetail(caseDetail)
 
                 var count = Number(_this.find('span').html().replaceAll('[\(]', '').replaceAll('[\)]', '')) + 1;
                 _this.find('span').html(String.format('({0})', count));
+
+                assignedProdSystemsCount++;
             });
         }
     }
-    $('#lblCaseDetailListProductSystemCategory').html(String.format('({0})', assignedProdSystems.length));
+
+    $('#lblCaseDetailListProductSystemCategory').html(String.format('({0})', assignedProdSystemsCount));
 
     //$('#txtCaseDetailListSurgeryDate').val(moment(caseDetail.procDateTime, "YYYY||MM||DD||HH||mm").format('MM/DD/YYYY'));
     var surgeryDate = moment(caseDetail.procDateTime, "YYYY||MM||DD").format('YYYY-MM-DD');
@@ -3525,7 +3530,7 @@ function saveCaseViewDetail(page, onComplete)
         var productsSelected = $(this).attr('dataproductsselected');
         if (productsSelected.length > 0)
         {
-            productsSystemsSelected += ',' + $.map(productsSelected.split(','), function(n) { return n + '||'; }).join(',');
+            productsSystemsSelected += ',' + $.map(productsSelected.split(','), function(n) { return String.format('{0}||', n); }).join(',');
         }
     });
 
