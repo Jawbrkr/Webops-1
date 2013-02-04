@@ -956,7 +956,11 @@ function caseDetailFull()
 
                 if (!String.isNullOrEmpty(caseId) && Number(caseId) > 0)
                 {
+<<<<<<< HEAD
                     $('#lblError').html('');
+=======
+                    $('#caseNoSave').html('');
+>>>>>>> Commit Feb 4
                     $.when
                     (
                         webOps.database.tables.caseDetailFull.update(userId, caseId, data.caseStatusID, data.salesRepID, data.procDateTime, data.hospitalID, data.physicianID, data.procTypeID, data.assignedProdSystems, data.patient, data.dob, data.sex, data.ageOfPatient, data.po, data.notes, data.freight, data.totalPrice),
@@ -967,14 +971,24 @@ function caseDetailFull()
                         // Validate mode onLine.
                         if (webOps.database.tables.setUp.select().appModeOnLine)
                         {
+<<<<<<< HEAD
                             $('#lblError').html('');
+=======
+                            $('#caseNoSave').html('');
+>>>>>>> Commit Feb 4
 
                             /*var assignedProdSystemsArray = [];
                             var assignedProdSystems = data.assignedProdSystems.split(',');
 
+<<<<<<< HEAD
                             for (var i = 0; i < assignedProdSystems.length; i++)
                             {
                                 assignedProdSystemsArray.push(String.format('"{0}"', assignedProdSystems[i].split('||')[0]));
+=======
+                            for (var i = 0; i < assignedProdSystems.length; i++)
+                            {
+                                assignedProdSystemsArray.push(String.format('"{0}"', assignedProdSystems[i].split('||')[0]));
+>>>>>>> Commit Feb 4
                             }*/
 
                             var assignedProdSystemsArray = String.format(data.assignedProdSystems).replaceAll(',', '');
@@ -1356,17 +1370,29 @@ function usage()
                     webOps.database.tables.usage.select(userId, caseId, catalog, lotCode),
                     webOps.database.tables.warehouses.selectByAddresses(userId, inventoryLoc, shipToLoc)
                 )
+<<<<<<< HEAD
                 .done(function(caseDetailFullData, usageData, warehouseData)
+=======
+                .done(function(caseDetailFullData, usageData, warehouseData)
+>>>>>>> Commit Feb 4
                 {
                     var externalItem = 1;
                     var quantity = Number(usageData.quantity || 0) + 1;
                     var warehouseId = warehouseData.id;
 
+<<<<<<< HEAD
                     externalItem =
                     (
                         $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
                         {
                             return (o.catNum == catalog && o.lotCode == lotCode);
+=======
+                    externalItem =
+                    (
+                        $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
+                        {
+                            return (o.catNum == catalog && o.lotCode == lotCode);
+>>>>>>> Commit Feb 4
                         }
                     ).length > 0) ? 0 : 1;
 
@@ -1378,11 +1404,19 @@ function usage()
                         .fail(function()
                         {
                             $.executeFunction(onError);
+<<<<<<< HEAD
                         });
                 })
                 .fail(function()
                 {
                     $.executeFunction(onError);
+=======
+                        });
+                })
+                .fail(function()
+                {
+                    $.executeFunction(onError);
+>>>>>>> Commit Feb 4
                 });
             }
         });
@@ -1414,16 +1448,28 @@ function usage()
                     webOps.database.tables.caseDetailFull.select(userId, caseId),
                     webOps.database.tables.warehouses.selectByAddresses(userId, inventoryLoc, shipToLoc)
                 )
+<<<<<<< HEAD
                 .done(function(caseDetailFullData, warehouseData)
+=======
+                .done(function(caseDetailFullData, warehouseData)
+>>>>>>> Commit Feb 4
                 {
                     var externalItem = 1;
                     var warehouseId = warehouseData.id;
 
+<<<<<<< HEAD
                     externalItem =
                     (
                         $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
                         {
                             return (o.catNum == catalog && o.lotCode == lotCode);
+=======
+                    externalItem =
+                    (
+                        $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
+                        {
+                            return (o.catNum == catalog && o.lotCode == lotCode);
+>>>>>>> Commit Feb 4
                         }
                     ).length > 0) ? 0 : 1;
 
@@ -1559,6 +1605,7 @@ function pricing()
                     webOps.database.tables.caseDetailFull.select(userId, caseId),
                     webOps.database.tables.warehouses.selectByAddresses(userId, inventoryLoc, shipToLoc)
                 )
+<<<<<<< HEAD
                 .done(function(caseDetailFullData, warehouseData)
                 {
                     var externalItem = 1;
@@ -1569,10 +1616,23 @@ function pricing()
                         $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
                         {
                             return (o.catNum == catalog && o.lotCode == lotCode);
+=======
+                .done(function(caseDetailFullData, warehouseData)
+                {
+                    var externalItem = 1;
+                    var warehouseId = warehouseData.id;
+
+                    externalItem =
+                    (
+                        $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
+                        {
+                            return (o.catNum == catalog && o.lotCode == lotCode);
+>>>>>>> Commit Feb 4
                         }
                     ).length > 0) ? 0 : 1;
 
                     $.when(webOps.database.tables.usage.savePricing(userId, caseId, newCatalog, newLotCode, parseInt(quantity), inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId))
+<<<<<<< HEAD
                     .done(function()
                     {
                         $.executeFunction(onSuccess);
@@ -1585,6 +1645,20 @@ function pricing()
                 .fail(function()
                 {
                     $.executeFunction(onError);
+=======
+                    .done(function()
+                    {
+                        $.executeFunction(onSuccess);
+                    })
+                    .fail(function()
+                    {
+                        $.executeFunction(onError);
+                    });
+                })
+                .fail(function()
+                {
+                    $.executeFunction(onError);
+>>>>>>> Commit Feb 4
                 });
             }
         });

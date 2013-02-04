@@ -140,6 +140,7 @@ function setupLinks()
     });
 
     //var currentEvent;
+<<<<<<< HEAD
     //$('a').off().on('tap', function(e)
     //{
     //    if (currentEvent)
@@ -149,6 +150,17 @@ function setupLinks()
     //    }
     //    else
     //    {
+=======
+    //$('a').off().on('tap', function(e)
+    //{
+    //    if (currentEvent)
+    //    {
+    //        e.preventDefault();
+    //        e.stopPropagation();
+    //    }
+    //    else
+    //    {
+>>>>>>> Commit Feb 4
     //        currentEvent = e;
     //    }
     //});
@@ -246,6 +258,7 @@ function setupLinks()
     // Login
 
     var timerHandle;
+<<<<<<< HEAD
     function timeoutStart()
     {
         $('a').on('tap', function()
@@ -256,19 +269,39 @@ function setupLinks()
         $('input, textarea').keyup(function()
         {
             clearTimeoutHandle();
+=======
+    function timeoutStart()
+    {
+        $('a').on('tap', function()
+        {
+            clearTimeoutHandle();
+        });
+
+        $('input, textarea').keyup(function()
+        {
+            clearTimeoutHandle();
+>>>>>>> Commit Feb 4
         });
 
         timeoutSet();
     }
 
+<<<<<<< HEAD
     function timeoutSet()
     {
         timerHandle = setTimeout(function()
         {
+=======
+    function timeoutSet()
+    {
+        timerHandle = setTimeout(function()
+        {
+>>>>>>> Commit Feb 4
             $.alert('Inactive Use: Sorry, but this application has not been used in the last 30 minutes and therefore you had to be logged out.');
             logout();
 
             $('#txtPassword').val('');
+<<<<<<< HEAD
             jQT.goToRight('#login');
 
         }, 1800000);
@@ -279,6 +312,18 @@ function setupLinks()
     {
         clearTimeout(timerHandle);
         timeoutSet();
+=======
+            jQT.goToRight('#login');
+
+        }, 1800000);
+    }
+
+
+    function clearTimeoutHandle()
+    {
+        clearTimeout(timerHandle);
+        timeoutSet();
+>>>>>>> Commit Feb 4
     }
 
 	$('#btnSignIn').off().on('tap', function(e)
@@ -2776,6 +2821,7 @@ function loadUserData()
 {
     var currentSessionObj = new currentSession().get();
     $('.customerFooter H1').html(currentSessionObj.customer);
+<<<<<<< HEAD
 
     if (currentSessionObj != null)
     {
@@ -2784,6 +2830,16 @@ function loadUserData()
     }
     else
     {
+=======
+
+    if (currentSessionObj != null)
+    {
+        loadSettings();
+        loadListCaseView();
+    }
+    else
+    {
+>>>>>>> Commit Feb 4
         logout();
         jQT.goToRight('#login');
     }
@@ -3602,8 +3658,13 @@ function saveCaseViewDetail(page, onComplete)
         },
         function()
         {
+<<<<<<< HEAD
         	$('#lblError').html('Error');
             $.alert('Error to save case detail');
+=======
+        	var caseIdOff = $('.caseDetailListID').html();
+            $('#caseNoSave').html(caseIdOff);
+>>>>>>> Commit Feb 4
         });
     }
     else
