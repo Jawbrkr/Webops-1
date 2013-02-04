@@ -750,7 +750,7 @@ webOps.synchronize =
                                     {
                                         if (status == webOps.enums.STATUS_CODE.OK)
                                         {
-                                            $.log(String.format('CaseID: {0}, age: {1} ', _caseId, data.ageOfPatient));
+                                            $.log('DATA FOR CASEDETAILFULL SAVE: ' + Object.toJSON(data));
                                             $.when(webOps.database.tables.caseDetailFull.save(userId, data.activityDesc, data.activityLevel, data.complications, data.consequences, data.consequencesDesc, data.contactName, data.decontamination, data.eventDesc, data.eventLocation, data.heightUnits, data.implantRevision, data.notReturned, data.patientHeight, data.patientWeight, data.products, data.returned, data.surgicalApproach, data.weightUnits, data.ageOfPatient, data.assignedInventoryItems, data.assignedKits, data.assignedProdSystems, data.caseStatusID, data.dob, data.errorCode, data.externalItems, data.freight, data.hasCapPrice, data.hospitalID, data.id, data.notes, data.patient, data.physicianID, data.po, data.procDateTime, data.procTypeID, data.salesRepID, data.sex, data.survey, data.totalPrice, data.usageStatus, data.usageTimestamp, data.usedItems))
                                                 .done(function()
                                                 {
@@ -759,13 +759,13 @@ webOps.synchronize =
 
                                                     function existUsedItem(itemID)
                                                     {
-                                                        var result = false;
+                                                        var result = null;
                                                         for (var i = 0; i < usedItems.length; i++)
                                                         {
-                                                            var currentItemID = data.usedItems[i].split('||')[0];
-                                                            if (currentItemID == itemID)
+                                                            var usedItem = data.usedItems[i].split('||');
+                                                            if (usedItem[0] == itemID)
                                                             {
-                                                                result = true;
+                                                                result = usedItem;
                                                                 break;
                                                             }
                                                         }
@@ -783,13 +783,13 @@ webOps.synchronize =
                                                             ({
                                                                 catalog: externalItemsData[1],
                                                                 lotCode: externalItemsData[2],
-                                                                inventoryLoc: externalItemsData[4],
-                                                                shipTo: externalItemsData[3],
-                                                                unitListPrice: externalItemsData[5],
-                                                                unitActualPrice: externalItemsData[6],
-                                                                total: externalItemsData[7],
+                                                                shipTo: externalItemsData[4],
+                                                                inventoryLoc: externalItemsData[5],
+                                                                unitListPrice: externalItemsData[6],
+                                                                unitActualPrice: externalItemsData[7],
+                                                                priceException: externalItemsData[8],
                                                                 notes: externalItemsData[9],
-                                                                priceException: externalItemsData[8]
+                                                                warehouseId: externalItemsData[10]
                                                             });
                                                         }
 
@@ -814,19 +814,21 @@ webOps.synchronize =
                                                         for (var i = 0; i < data.assignedInventoryItems.length; i++)
                                                         {
                                                             var assignedInventoryItemsData = data.assignedInventoryItems[i].split('||');
-                                                            if (existUsedItem(assignedInventoryItemsData[0]) == true)
+                                                            var usedItem = existUsedItem(assignedInventoryItemsData[0]);
+
+                                                            if (usedItem)
                                                             {
                                                                 assignedInventoryItems.push
                                                                 ({
                                                                     catalog: assignedInventoryItemsData[1],
-                                                                    lotCode: assignedInventoryItemsData[2],
-                                                                    inventoryLoc: assignedInventoryItemsData[7],
-                                                                    shipTo: assignedInventoryItemsData[3],
-                                                                    unitListPrice: assignedInventoryItemsData[6],
-                                                                    unitActualPrice: assignedInventoryItemsData[4],
-                                                                    total: assignedInventoryItemsData[4],
-                                                                    notes: assignedInventoryItemsData[9],
-                                                                    priceException: assignedInventoryItemsData[8]
+                                                                    lotCode: assignedInventoryItemsData[2],                                                                    
+                                                                    inventoryLoc: usedItem[1],
+                                                                    shipTo: usedItem[2],                                                                    
+                                                                    unitListPrice: usedItem[3],
+                                                                    unitActualPrice: usedItem[4],
+                                                                    priceException: usedItem[5],
+                                                                    notes: usedItem[6],
+                                                                    warehouseId: null
                                                                 });
                                                             }
                                                         }
@@ -1491,45 +1493,73 @@ webOps.synchronize =
 
                 function usageSync(usageObjs)
                 {
-                    var usageDetail = [];
+                    var usageItems = [];
+                    var externalItems = [];
+
                     for (var i = 0, usageObj = null; i < usageObjs.length; i++)
                     {
-                        //1003||326295S ||003||6928||6928||265.760009765625||0||352944129||||, this is how the String is generated
-                        //id||cat. Num|| lot code||ship To ID||rRepl. To ID||List Price||Ext. Price||Exception Code||Notes||WareHouse ID. Dont worry about the ID value.
-
                         usageObj = usageObjs[i];
-                        usageDetail.push
-                        (
-                            String.format
-                            (
-                                '"{0}||{1}||{2}||{3}||{4}||{5}||{6}||{7}||{8}||{9}"',
-                                i + 1, 
-                                usageObj.catalog, 
-                                usageObj.lotCode, 
-                                usageObj.shipTo, 
-                                usageObj.inventoryLoc, 
-                                usageObj.unitActualPrice || 0,
-                                usageObj.total || 0,
-                                usageObj.priceException || 0, 
-                                usageObj.notes, 
-                                usageObj.inventoryLoc
-                            )
-                        );
+                        if (usageObj.externalItem == 1)
+                        {
+                            //<id>||<catNum>||<lotCode>||<shipToID>||<replenishToID>||<listPrice>||<extPrice>||<exceptionCode>||<notes>||<warehouseId
+                            for (var l = 0; l < usageObj.quantity; l++)
+                            {
+                                externalItems.push
+                                (
+                                    String.format
+                                    (
+                                        '"{0}||{1}||{2}||{3}||{4}||{5}||{6}||{7}||{8}||{9}||{10}"',//||{11}
+                                        i + 1,
+                                        usageObj.catalog,
+                                        usageObj.lotCode,
+                                        //'',
+                                        usageObj.shipTo,
+                                        usageObj.inventoryLoc,
+                                        usageObj.unitListPrice || 0,
+                                        usageObj.unitActualPrice || 0,
+                                        usageObj.priceException || 0,
+                                        usageObj.notes || '',
+                                        usageObj.inventoryLoc,
+                                        usageObj.warehouseId || ''
+                                    )
+                                );
+                            }
+                        }
+                        else
+                        {
+                            //<id>||<replenishToID>||<shipToID>||<listPrice>||<extPrice>||<exceptionCode>||<notes>
+                            for (var l = 0; l < usageObj.quantity; l++)
+                            {
+                                usageItems.push
+                                (
+                                    String.format
+                                    (
+                                        '"{0}||{1}||{2}||{3}||{4}||{5}||{6}"',
+                                        i + 1,
+                                        usageObj.inventoryLoc,
+                                        usageObj.shipTo,
+                                        usageObj.unitListPrice,
+                                        usageObj.unitActualPrice || 0,
+                                        usageObj.priceException || 0,
+                                        usageObj.notes
+                                    )
+                                );
+                            }
+                        }
                     }
 
-                    if (usageDetail.length > 0)
+                    if (externalItems.length > 0 || usageItems.length > 0)
                     {
                         var message;
-                        webOps.methods.updateCaseExternalItems([customer, sessionId, caseId, usageTimestamp, usageDetail, 0], function(status, data)
+                        webOps.methods.updateCaseExternalItems([customer, sessionId, caseId, usageTimestamp, externalItems, 0], function(status, data)
                         {
                             $.log(String.format('Usage sync to server: {0}', data));
                             if (status == webOps.enums.STATUS_CODE.OK)
                             {
-                                //message = String.format('Inventory count sync to server: {0}', data);
-                                if (usageDetail.length == data)
-                                {
-                                    webOps.database.tables.usage.updateGroupCommitted(userId, caseId);
-                                }
+                                /*if (externalItems.length == data)
+                                {*/
+                                    webOps.database.tables.usage.updateGroupCommitted(userId, caseId, 1);
+                                //}
 
                                 deferred.resolve(message);
                             }
@@ -1538,9 +1568,6 @@ webOps.synchronize =
                                 message = String.format('Usage sync to server ERROR: {0}', data);
                                 deferred.resolve(message);
                             }
-
-                            /*else if (status == webOps.enums.STATUS_CODE.WARNING) def.resolve();
-                            else def.reject();*/
                         });
                     }
                     else

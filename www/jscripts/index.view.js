@@ -139,6 +139,20 @@ function setupLinks()
         setLoaderPosition();        
     });
 
+    //var currentEvent;
+    //$('a').off().on('tap', function(e)
+    //{
+    //    if (currentEvent)
+    //    {
+    //        e.preventDefault();
+    //        e.stopPropagation();
+    //    }
+    //    else
+    //    {
+    //        currentEvent = e;
+    //    }
+    //});
+
     $('.backCustom, .cancelCustom').off().on('tap', function(e)
     {
         e.stopPropagation();
@@ -231,12 +245,44 @@ function setupLinks()
 
     // Login
 
+    var timerHandle;
+    function timeoutStart()
+    {
+        $('a').on('tap', function()
+        {
+            clearTimeoutHandle();
+        });
+
+        $('input, textarea').keyup(function()
+        {
+            clearTimeoutHandle();
+        });
+
+        timeoutSet();
+    }
+
+    function timeoutSet()
+    {
+        timerHandle = setTimeout(function()
+        {
+            $.alert('Inactive Use: Sorry, but this application has not been used in the last 30 minutes and therefore you had to be logged out.');
+            logout();
+
+            $('#txtPassword').val('');
+            jQT.goToRight('#login');
+
+        }, 1800000);
+    }
+
+
+    function clearTimeoutHandle()
+    {
+        clearTimeout(timerHandle);
+        timeoutSet();
+    }
+
 	$('#btnSignIn').off().on('tap', function(e)
 	{
-	    /*if (implementTapReady())
-	        return false;*/
-	    timeLogout();
-
 	    function signIn()
 	    {
 	        var user = $('#txtUserName').val();
@@ -245,6 +291,8 @@ function setupLinks()
 
 	        login(customer, user, password, function()
 	        {
+	            timeoutStart();
+
 	            var page = ($('#ckbAppMode').is(':checked') ? '#home' : '#loadingCaseFromTheServer');
 	            jQT.goToLeft(page);
 	            
@@ -273,7 +321,6 @@ function setupLinks()
 
 	        img.style.display = 'none';
 	        img.src = imgsrc;
-	        //$('body').append('<img src="http://test-prod.webops.com/images/WebOpsLogo.gif" style="display:none;" onerror="this.onerror=null;this.src="sinconexion.jpg" ;">')
 	        $('body').append(img);
 	    }
 	});
@@ -289,47 +336,6 @@ function setupLinks()
 	    $('#txtPassword').val('');
 	    jQT.goToRight('#login');
 	});
-
-	var timerHandle;
-	function resetTimer()
-	{
-        clearTimeout(timerHandle);
-        //$.log('funciono');
-        timerHandle = setTimeout(function()
-		{
-            //$.alert('Inactive Use: Sorry, but this application has not been used in the last 30 minutes and therefore you had to be logged out.');
-            logout();
-            $('#txtPassword').val('');
-            jQT.goToRight('#login');
-
-		}, 1800000);
-    }
-
-	function timeLogout()
-	{
-		console.log('Tieout');
-
-		$('a').on('tap', function()
-	    {
-		    resetTimer();
-		    console.log('reset');
-	    });
-
-	    $('input, textarea').keyup(function(){
-
-		    resetTimer();
-		    console.log('reset2');
-	    });
-
-	    timerHandle = setTimeout(function()
-		{
-			$.alert('Inactive Use: Sorry, but this application has not been used in the last 30 minutes and therefore you had to be logged out.');
-			logout();
-			$('#txtPassword').val('');
-			jQT.goToRight('#login');
-
-	    }, 1800000);
-    }
 
     $('#login').bind('pageAnimationEnd', function(event, info)
 	{
@@ -453,7 +459,7 @@ function setupLinks()
 	{
 	    if (info.direction == 'in')
 	    { 
-	        if (new currentSession().get() == null)
+	        if (new currentSession().get() == false)
 	        {
 	            jQT.goToRight('#login');
 	        }
@@ -2008,11 +2014,10 @@ function setupLinks()
 	        $('#caseDetailList_imaging_List ul.imagingList').empty();
 	        new caseView().getPhotoList(caseId, category, function(photoList)
 	        {
-	        	setTimeout(function()
+	        	set|ut(function()
 				{
 					background.hide();				
 					loadPhotoList('PreOp', photoList);
-					$('.imageView').css('display','block');
 	            	jQT.goToLeft('#caseDetailList_imaging_List');
 
 				}, 1000);
@@ -2039,7 +2044,6 @@ function setupLinks()
 				{
 					background.hide();				
 					loadPhotoList('PostOp', photoList);
-					$('.imageView').css('display','block');
 	            	jQT.goToLeft('#caseDetailList_imaging_List');
 
 				}, 1000);
@@ -2047,8 +2051,6 @@ function setupLinks()
 	        });
 	    }
 	});
-
-	
 	
 	//$('#caseDetailList_imaging_List ul.imagingList li > a').live('tap', function(e)
 	//{
@@ -2070,13 +2072,6 @@ function setupLinks()
 	    var photoID = $(this).attr('dataid');
 	    var photoName = $(this).find('.tdName').text();
 	    var caseId = $('#caseDetailList .caseDetailListID').html();
-	    var img = $(this).find('img').clone();
-
-	    		
-	    	
-
-	    $('#lblCaseDetailListImagingViewName').html(photoName);
-	    $('#caseDetailList_imaging_view .imageView').append(img);
 
 	    if ($('#lblCaseDetailListImagingListTitle').text() == 'PreOp')
 	    {
@@ -2100,9 +2095,7 @@ function setupLinks()
 	        new caseView().getPhotoList(caseId, category, function(photoList)
 	        {
 	            //$('.flexslider').flexslider();
-
 	            loadPhotoListView('PreOp', photoList);
-	            $('#caseDetailList_imaging_view ul.slides li').css('display','none');
 	            jQT.goToLeft('#caseDetailList_imaging_view');
 	        });
 	    }
@@ -2115,7 +2108,6 @@ function setupLinks()
 	        {
 	            //$('.flexslider').flexslider();
 	            loadPhotoListView('PostOp', photoList);
-	            //if($(photoName) ==)
 	            jQT.goToLeft('#caseDetailList_imaging_view');
 	        });
 	    }
@@ -2124,7 +2116,6 @@ function setupLinks()
 	$('#btnBackImagingView').off().on('tap', function()
 	{
 	    $('#caseDetailList_imaging_view .imageView').empty();
-	    $('.imageView').css('display','block');
 	    jQT.goToRight('#caseDetailList_imaging_List');
 	});
 
@@ -2196,12 +2187,12 @@ function setupLinks()
 				var caseId = $('#caseDetailList .caseDetailListID').html();
 				var category = webOps.database.tables.casePhotoList.categories.PRE_OP;	
 
-				$('#caseDetailList_imaging_view ul.slides').empty();
+				$('#caseDetailList_imaging_List ul.imagingList').empty();
 				new caseView().getPhotoList(caseId, category, function(photoList)
 				{
 
 				//alert('Lista de imágenes 1');
-					loadPhotoListView('PreOp', photoList);
+					loadPhotoList('PreOp', photoList);
 					jQT.goToRight('#caseDetailList_imaging');
 					backImgingList();	
 				});
@@ -2211,10 +2202,10 @@ function setupLinks()
 				var caseId = $('#caseDetailList .caseDetailListID').html();
 				var category2 = webOps.database.tables.casePhotoList.categories.POST_OP;	
 
-				$('#caseDetailList_imaging_view ul.slides').empty();
+				$('#caseDetailList_imaging_List ul.imagingList').empty();
 				new caseView().getPhotoList(caseId, category2, function(photoList)
 				{	
-					loadPhotoListView('PostOp', photoList);
+					loadPhotoList('PostOp', photoList);
 					jQT.goToRight('#caseDetailList_imaging');
 					backImgingList();	
 				});
@@ -2786,8 +2777,16 @@ function loadUserData()
     var currentSessionObj = new currentSession().get();
     $('.customerFooter H1').html(currentSessionObj.customer);
 
-    loadSettings();
-    loadListCaseView();
+    if (currentSessionObj != null)
+    {
+        loadSettings();
+        loadListCaseView();
+    }
+    else
+    {
+        logout();
+        jQT.goToRight('#login');
+    }
 }
 
 function loadSetUp()
@@ -3016,6 +3015,7 @@ function loadListCaseView()
             {
             	var dataItemInfo = li.format(dataItem.id, dataItem.html(''))
             }
+
             ulUsageInventoryLocation.append($(dataItemInfo));
             ulUsageInventoryLoc.append($(dataItemInfo));
         }
@@ -3216,20 +3216,7 @@ function loadPhotoListView(title, photoList)
     $('#lblCaseDetailListImagingViewTitle').html(title);
 
     var ul = $('#caseDetailList_imaging_view ul.slides');
-    var li = 
-    	'<li> \
-            <a href="#" dataid="{0}"> \
-                <table> \
-                    <tr> \
-                        <td class="tdImage"> \
-                            <div> \
-                                <img src="data:image;base64,{1}" /> \
-                            </div> \
-                        </td> \
-                    </tr> \
-                </table> \
-            </a> \
-        </li>';
+    var li = '<li><img src="data:image;base64,{1}" /></li>';
 
     for (var i = 0; i < (photoList || []).length; i++)
     {
@@ -3245,8 +3232,6 @@ function loadPhotoListView(title, photoList)
         arrowsFunction();
         //$('.flexslider').flexslider();
     }
-
-    
 }
 
 function getCaseView(filter, onComplete)
@@ -4145,52 +4130,3 @@ $(function()
     setupLinks();
     OfflineModeEventListener(new setUp().validateAirplaneMode);
 });
-
-
-
-/*
-$btnChangeImg.click(function () {
-
-        function win(r) {            
-            var src = $.parseJSON(r.response).imgURL,
-                isValid = utils.isValid.URL(src);
-            $photo.attr('src', (isValid ? src : "css/images/profile-img.png"));
-            //$.alert("win: " + r.response);
-            $.alert("Imagen actualizada correctamente.");
-        }
-
-        function fail(error) {
-            $.alert("A ocurrido un error: Cod. " + error.code);
-        }
-
-        function uploadPhoto(imageURI) {
-            
-            var options = new FileUploadOptions();
-            options.fileKey = "file";
-            options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
-            options.mimeType = "image/png";//"image/jpeg";
-
-            options.params = bll.getUser().tokenData;
-            options.chunkedMode = false;
-
-            var ft = new FileTransfer();
-            ft.upload(imageURI, "http://www.intermedianetwork.com/appfox/pictureupload.php", win, fail, options);
-        }
-
-        var sourceType = (device.platform == "Android")
-                         ? navigator.camera.PictureSourceType.PHOTOLIBRARY
-                         : navigator.camera.PictureSourceType.SAVEDPHOTOALBUM;
-
-        navigator.camera.getPicture(uploadPhoto, function (message) {
-            $.alert(message);
-        }, {
-            quality: 50,
-            targetWidth: 100,
-            targetHeight: 100,
-            encodingType: Camera.EncodingType.PNG,
-            destinationType: navigator.camera.DestinationType.FILE_URI,
-            sourceType: sourceType
-        });
-
-    });
-*/

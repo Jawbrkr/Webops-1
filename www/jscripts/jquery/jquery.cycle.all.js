@@ -149,8 +149,6 @@ function handleArguments(cont, options, arg2) {
 			return false;
 		case 'prev':
 		case 'next':
-			//$('.imageView').css('display','none');
-			alert('Nex');
 			opts = $(cont).data('cycle.opts');
 			if (!opts) {
 				log('options not found, "prev/next" ignored');
@@ -177,7 +175,6 @@ function handleArguments(cont, options, arg2) {
 		}
 		options.nextSlide = num;
 		if (cont.cycleTimeout) {
-			alert('Nex');
 			clearTimeout(cont.cycleTimeout);
 			cont.cycleTimeout = 0;
 		}
@@ -214,9 +211,9 @@ function removeFilter(el, opts) {
 // unbind event handlers
 function destroy(cont, opts) {
 	if (opts.next)
-		$(opts.next).unbind(opts.prevNextEvent); alert('Nex');
+		$(opts.next).unbind(opts.prevNextEvent);
 	if (opts.prev)
-		$(opts.prev).unbind(opts.prevNextEvent); alert('Nex');
+		$(opts.prev).unbind(opts.prevNextEvent);
 	
 	if (opts.pager || opts.pagerAnchorBuilder)
 		$.each(opts.pagerAnchors || [], function() {
@@ -494,9 +491,9 @@ function buildOptions($cont, $slides, els, options, o) {
 			opts.after[0].apply(e0, [e0, e0, opts, true]);
 	}
 	if (opts.next)
-		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,1); alert('Nex');});
+		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,1);});
 	if (opts.prev)
-		$(opts.prev).bind(opts.prevNextEvent,function(){return advance(opts,0); alert('Nex');});
+		$(opts.prev).bind(opts.prevNextEvent,function(){return advance(opts,0);});
 	if (opts.pager || opts.pagerAnchorBuilder)
 		buildPager(els,opts);
 
@@ -584,7 +581,6 @@ function exposeAddSlide(opts, els) {
 		if (prepend) {
 			opts.currSlide++;
 			opts.nextSlide++;
-			alert('Nex');
 		}
 
 		if (!$.support.opacity && opts.cleartype && !opts.cleartypeNoBg)
@@ -665,8 +661,6 @@ function go(els, opts, manual, fwd) {
 	if ((manual || !p.cyclePause) && (opts.nextSlide != opts.currSlide)) {
 		changed = true;
 		var fx = opts.fx;
-		//alert('Nex');
-		$('.imageView').css('display','none');
 		// keep trying to get the slide size if we don't have it yet
 		curr.cycleH = curr.cycleH || $(curr).height();
 		curr.cycleW = curr.cycleW || $(curr).width();
@@ -804,7 +798,7 @@ function getTimeout(curr, next, opts, fwd) {
 }
 
 // expose next/prev function, caller must pass in state
-$.fn.cycle.next = function(opts) { advance(opts,1); alert('Nex'); };
+$.fn.cycle.next = function(opts) { advance(opts,1); };
 $.fn.cycle.prev = function(opts) { advance(opts,0);};
 
 // advance slide forward or back

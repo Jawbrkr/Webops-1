@@ -16,7 +16,7 @@
 
 webOps.database =
 {
-    version: '1.124',
+    version: '1.125',
     sqlDatabase: null,
     versionSchema:
     {
@@ -70,7 +70,7 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS hospitals(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, warehouseId INTEGER)');
 
                     $.log('CREATE TABLE addresses');
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS addresses(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, replName TEXT, replTo INTEGER, shipName TEXT, shipTo INTEGER, espacio TEXT)');
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS addresses(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, replName TEXT, replTo INTEGER, shipName TEXT, shipTo INTEGER)');
 
                     $.log('CREATE TABLE productSystems');
                     tx.executeSql('CREATE TABLE IF NOT EXISTS productSystems(userId INTEGER NOT NULL, description TEXT, id INTEGER NOT NULL, name TEXT NOT NULL)');
@@ -129,7 +129,8 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS inventoryCount(userId INTEGER NOT NULL, hospitalID INTEGER NOT NULL, catalog TEXT, lotCode TEXT, committedToServer BOOLEAN, date TEXT)');
 
                     $.log('CREATE TABLE usage');
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS usage(userId INTEGER NOT NULL, caseId INTEGER NOT NULL, catalog TEXT, lotCode TEXT, inventoryLoc TEXT, shipTo TEXT, notes TEXT, unitListPrice FLOAT, unitActualPrice FLOAT, total FLOAT, priceException INT, committedToServer BOOLEAN, date TEXT)');
+                    tx.executeSql('DROP TABLE usage');
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS usage(userId INTEGER NOT NULL, caseId INTEGER NOT NULL, catalog TEXT, lotCode TEXT, quantity INTEGER, inventoryLoc TEXT, shipTo TEXT, notes TEXT, unitListPrice FLOAT, unitActualPrice FLOAT, total FLOAT, priceException INT, externalItem BOOLEAN, warehouseId INTEGER, committedToServer BOOLEAN, date TEXT, PRIMARY KEY(userId, caseId, catalog, lotCode))');
 
                 }, function(er) { $.alert(er.message); });
             }
@@ -1227,12 +1228,12 @@ webOps.database.tables.assignedKits =
 
 webOps.database.tables.usage =
 {
-    save: function(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException)
+    save: function(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 0, new Date(), espacio];
+            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            var params = [userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, 0, new Date()];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
@@ -1248,22 +1249,22 @@ webOps.database.tables.usage =
             );
         }).promise();
     },
-    savePricing: function(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException)
+    savePricing: function(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 1, new Date(), espacio];
+            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            var params = [userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, 1, new Date()];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
                 {
-                    $.log('usage save successful.');
+                    $.log('usage pricing save successful.');
                     deferred.resolve();
                 },
                 function()
                 {
-                    $.log('usage save error.');
+                    $.log('usage pricing save error.');
                     deferred.reject();
                 }
             );
@@ -1273,9 +1274,9 @@ webOps.database.tables.usage =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             var params = [userId, caseId];
-            var properties = ['catalog', 'lotCode', 'inventoryLoc', 'shipTo', 'unitListPrice', 'unitActualPrice', 'total', 'notes', 'priceException'];
+            var properties = ['catalog', 'lotCode', 'inventoryLoc', 'shipTo', 'unitListPrice', 'unitActualPrice', 'total', 'notes', 'priceException', 'externalItem', 'warehouseId'];
             var customParams = ['1', 'new Date()'];
 
             webOps.database.commands.executeNonQueryMultiple(sql, data, params, properties, customParams,
@@ -1296,7 +1297,7 @@ webOps.database.tables.usage =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT caseId, COUNT(*) quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, committedToServer, date FROM usage WHERE userId = ? GROUP BY date, caseId, catalog, lotCode ORDER BY date DESC';
+            var sql = 'SELECT caseId, quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, committedToServer, date FROM usage WHERE userId = ? GROUP BY date, caseId, catalog, lotCode ORDER BY date DESC';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -1341,11 +1342,31 @@ webOps.database.tables.usage =
             );
         }).promise();
     },
+    select: function(userId, caseId, catalog, lotCode)
+    {
+        return $.Deferred(function(deferred)
+        {
+            var sql = 'SELECT userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, warehouseId, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? AND catalog = ? AND lotCode = ?';
+            var params = [userId, caseId, catalog, lotCode];
+
+            webOps.database.commands.executeReader(sql, params,
+                function(tx, data)
+                {
+                    $.log('usage read successful');
+                    deferred.resolve((data.rows.length > 0) ? data.rows.item(0) : {});
+                },
+                function()
+                {
+                    deferred.reject();
+                }
+            );
+        }).promise();
+    },
     selectGroup: function(userId, caseId)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT COUNT(*) quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? GROUP BY catalog, lotCode ORDER BY date DESC';
+            var sql = 'SELECT userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, warehouseId, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? ORDER BY date DESC';
             var params = [userId, caseId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -1372,7 +1393,7 @@ webOps.database.tables.usage =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT COUNT(*) quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? AND committedToServer = 1 GROUP BY catalog, lotCode ORDER BY date DESC';
+            var sql = 'SELECT userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, warehouseId, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? AND committedToServer = 1 GROUP BY catalog, lotCode ORDER BY date DESC';
             var params = [userId, caseId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -1437,12 +1458,12 @@ webOps.database.tables.usage =
             );
         }).promise();
     },
-    updateGroupCommitted: function(userId, caseId)
+    updateGroupCommitted: function(userId, caseId, externalItem)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'UPDATE usage SET committedToServer = ? WHERE userId = ? AND caseId = ?';
-            var params = [1, userId, caseId];
+            var sql = 'UPDATE usage SET committedToServer = ? WHERE userId = ? AND caseId = ? AND externalItem = ?';
+            var params = [1, userId, caseId, externalItem];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
@@ -2438,9 +2459,9 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT INTO addresses (userId, id, name, replName, replTo, shipName, shipTo, espacio) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+            var sql = 'INSERT INTO addresses (userId, id, name, replName, replTo, shipName, shipTo) VALUES (?, ?, ?, ?, ?, ?, ?)';
             var params = [userId];
-            var properties = ['id', 'name', 'replName', 'replTo', 'shipName', 'shipTo', 'espacio'];
+            var properties = ['id', 'name', 'replName', 'replTo', 'shipName', 'shipTo'];
 
             webOps.database.commands.executeNonQueryMultiple(sql, data, params, properties, [],
                 function()
@@ -2460,7 +2481,7 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo, espacio FROM addresses WHERE userId = ?';
+            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo FROM addresses WHERE userId = ?';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -2487,7 +2508,7 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo, espacio FROM addresses WHERE userId = ? AND replTo = 1';
+            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo FROM addresses WHERE userId = ? AND replTo = 1';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -2515,7 +2536,7 @@ webOps.database.tables.addresses =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo, espacio FROM addresses WHERE userId = ? AND shipTo = 1';
+            var sql = 'SELECT userId, id, name, replName, replTo, shipName, shipTo FROM addresses WHERE userId = ? AND shipTo = 1';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -2841,6 +2862,26 @@ webOps.database.tables.warehouses =
                     }
 
                     deferred.resolve(items);
+                },
+                function()
+                {
+                    deferred.reject();
+                }
+            );
+        }).promise();
+    },
+    selectByAddresses: function(userId, replAddresses, shipAddresses)
+    {
+        return $.Deferred(function(deferred)
+        {
+            var sql = 'SELECT userId, id, replAddresses, shipAddresses FROM warehouses WHERE userId = ? AND replAddresses = ? AND shipAddresses = ?';
+            var params = [userId, replAddresses, shipAddresses];
+
+            webOps.database.commands.executeReader(sql, params,
+                function(tx, data)
+                {
+                    $.log('warehouses reader successful');
+                    deferred.resolve((data.rows.length > 0) ? data.rows.item(0) : {});
                 },
                 function()
                 {

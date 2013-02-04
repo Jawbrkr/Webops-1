@@ -5,7 +5,7 @@
 // 	Autor: Oscar Cubillos <tegers77@gmail.com>
 // 	Version 1.0
 // 	Create: 2012-08-26
-// 	Last Modified: 2013-01-27
+// 	Last Modified: 2013-02-03
 // 
 // 	----------------------------------------------------------------
 // 	References
@@ -1340,15 +1340,40 @@ function usage()
             init: function()
             {
                 var userId = webOps.database.tables.currentSession.select().userId;
-                $.when(webOps.database.tables.usage.save(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, notes))
-                    .done(function()
-                    {
-                        $.executeFunction(onSuccess);
-                    })
-                    .fail(function()
-                    {
-                        $.executeFunction(onError);
-                    });
+                $.when
+                (
+                    webOps.database.tables.caseDetailFull.select(userId, caseId),
+                    webOps.database.tables.usage.select(userId, caseId, catalog, lotCode),
+                    webOps.database.tables.warehouses.selectByAddresses(userId, inventoryLoc, shipToLoc)
+                )
+                .done(function(caseDetailFullData, usageData, warehouseData)
+                {
+                    var externalItem = 1;
+                    var quantity = Number(usageData.quantity || 0) + 1;
+                    var warehouseId = warehouseData.id;
+
+                    externalItem =
+                    (
+                        $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
+                        {
+                            return (o.catNum == catalog && o.lotCode == lotCode);
+                        }
+                    ).length > 0) ? 0 : 1;
+
+                    $.when(webOps.database.tables.usage.save(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, null, null, null, notes, null, externalItem, warehouseId))
+                        .done(function()
+                        {
+                            $.executeFunction(onSuccess);
+                        })
+                        .fail(function()
+                        {
+                            $.executeFunction(onError);
+                        });
+                })
+                .fail(function()
+                {
+                    $.executeFunction(onError);
+                });
             }
         });
     },
@@ -1376,44 +1401,36 @@ function usage()
                 var userId = webOps.database.tables.currentSession.select().userId;
                 $.when
                 (
-                    webOps.database.tables.usage.removeByEntry(userId, caseId, catalog, lotCode)
+                    webOps.database.tables.caseDetailFull.select(userId, caseId),
+                    webOps.database.tables.warehouses.selectByAddresses(userId, inventoryLoc, shipToLoc)
                 )
+                .done(function(caseDetailFullData, warehouseData)
+                {
+                    var externalItem = 1;
+                    var warehouseId = warehouseData.id;
+
+                    externalItem =
+                    (
+                        $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
+                        {
+                            return (o.catNum == catalog && o.lotCode == lotCode);
+                        }
+                    ).length > 0) ? 0 : 1;
+
+                    $.when(webOps.database.tables.usage.save(userId, caseId, newCatalog, newLotCode, parseInt(quantity), inventoryLoc, shipToLoc, null, null, null, notes, null, externalItem, warehouseId))
                     .done(function()
                     {
-                        var deferreds = [];
-                        for (var i = 0; i < parseInt(quantity); i++)
-                        {
-                            deferreds.push
-                            (
-                                $.Deferred(function(def)
-                                {
-                                    $.when(webOps.database.tables.usage.save(userId, caseId, newCatalog, newLotCode, inventoryLoc, shipToLoc, notes))
-                                        .done(function()
-                                        {
-                                            def.resolve();
-                                        })
-                                        .fail(function()
-                                        {
-                                            def.resolve();
-                                        });
-                                }).promise()
-                            );
-                        }
-
-                        $.when.apply($, deferreds)
-                        .done(function()
-                            {
-                                $.executeFunction(onSuccess);
-                            })
-                            .fail(function()
-                            {
-                                $.executeFunction(onError);
-                            });                            
+                        $.executeFunction(onSuccess);
                     })
                     .fail(function()
                     {
                         $.executeFunction(onError);
                     });
+                })
+                .fail(function()
+                {
+                    $.executeFunction(onError);
+                });
             }
         });
     },
@@ -1529,44 +1546,36 @@ function pricing()
                 var userId = webOps.database.tables.currentSession.select().userId;
                 $.when
                 (
-                    webOps.database.tables.usage.removeByEntry(userId, caseId, catalog, lotCode)
+                    webOps.database.tables.caseDetailFull.select(userId, caseId),
+                    webOps.database.tables.warehouses.selectByAddresses(userId, inventoryLoc, shipToLoc)
                 )
+                .done(function(caseDetailFullData, warehouseData)
+                {
+                    var externalItem = 1;
+                    var warehouseId = warehouseData.id;
+
+                    externalItem =
+                    (
+                        $.grep(caseDetailFullData.assignedInventoryItems || [], function(o)
+                        {
+                            return (o.catNum == catalog && o.lotCode == lotCode);
+                        }
+                    ).length > 0) ? 0 : 1;
+
+                    $.when(webOps.database.tables.usage.savePricing(userId, caseId, newCatalog, newLotCode, parseInt(quantity), inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId))
                     .done(function()
                     {
-                        var deferreds = [];
-                        for (var i = 0; i < parseInt(quantity) ; i++)
-                        {
-                            deferreds.push
-                            (
-                                $.Deferred(function(def)
-                                {
-                                    $.when(webOps.database.tables.usage.savePricing(userId, caseId, newCatalog, newLotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException))
-                                        .done(function()
-                                        {
-                                            def.resolve();
-                                        })
-                                        .fail(function()
-                                        {
-                                            def.resolve();
-                                        });
-                                }).promise()
-                            );
-                        }
-
-                        $.when.apply($, deferreds)
-                        .done(function()
-                        {
-                            $.executeFunction(onSuccess);
-                        })
-                            .fail(function()
-                            {
-                                $.executeFunction(onError);
-                            });
+                        $.executeFunction(onSuccess);
                     })
                     .fail(function()
                     {
                         $.executeFunction(onError);
                     });
+                })
+                .fail(function()
+                {
+                    $.executeFunction(onError);
+                });
             }
         });
     }
