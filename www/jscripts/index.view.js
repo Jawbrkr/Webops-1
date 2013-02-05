@@ -140,7 +140,6 @@ function setupLinks()
     });
 
     //var currentEvent;
-<<<<<<< HEAD
     //$('a').off().on('tap', function(e)
     //{
     //    if (currentEvent)
@@ -150,17 +149,6 @@ function setupLinks()
     //    }
     //    else
     //    {
-=======
-    //$('a').off().on('tap', function(e)
-    //{
-    //    if (currentEvent)
-    //    {
-    //        e.preventDefault();
-    //        e.stopPropagation();
-    //    }
-    //    else
-    //    {
->>>>>>> Commit Feb 4
     //        currentEvent = e;
     //    }
     //});
@@ -258,7 +246,6 @@ function setupLinks()
     // Login
 
     var timerHandle;
-<<<<<<< HEAD
     function timeoutStart()
     {
         $('a').on('tap', function()
@@ -269,39 +256,19 @@ function setupLinks()
         $('input, textarea').keyup(function()
         {
             clearTimeoutHandle();
-=======
-    function timeoutStart()
-    {
-        $('a').on('tap', function()
-        {
-            clearTimeoutHandle();
-        });
-
-        $('input, textarea').keyup(function()
-        {
-            clearTimeoutHandle();
->>>>>>> Commit Feb 4
         });
 
         timeoutSet();
     }
 
-<<<<<<< HEAD
     function timeoutSet()
     {
         timerHandle = setTimeout(function()
         {
-=======
-    function timeoutSet()
-    {
-        timerHandle = setTimeout(function()
-        {
->>>>>>> Commit Feb 4
             $.alert('Inactive Use: Sorry, but this application has not been used in the last 30 minutes and therefore you had to be logged out.');
             logout();
 
             $('#txtPassword').val('');
-<<<<<<< HEAD
             jQT.goToRight('#login');
 
         }, 1800000);
@@ -312,18 +279,6 @@ function setupLinks()
     {
         clearTimeout(timerHandle);
         timeoutSet();
-=======
-            jQT.goToRight('#login');
-
-        }, 1800000);
-    }
-
-
-    function clearTimeoutHandle()
-    {
-        clearTimeout(timerHandle);
-        timeoutSet();
->>>>>>> Commit Feb 4
     }
 
 	$('#btnSignIn').off().on('tap', function(e)
@@ -434,7 +389,41 @@ function setupLinks()
 	$('#btnCustomerSelect').off().on('tap', function()
 	{
 	    var customer = $('#txtCustomer');
-	    if (!String.isNullOrEmpty(customer.val()))
+        if ($('#customerSelect ul#ulCustomerSelect').html().length > 1)
+        {
+            $.confirm('A new account has been detected.  By clicking OK, you will delete all case data and download the case data associated with the new account.', function()
+            {                
+                var isOnline = false;
+                new settings().resetEverythingAllData(isOnline, true, function()
+                {
+                    //$('#lblCustomer').html('');
+                    //customer.val('');
+                    new customerSelect().newCustomer(customer.val(), 
+                    function()
+                    {
+                        customer.val('');
+                        loadCustomers();
+                    },
+                    function()
+                    {
+                        $.alert('Fail to create customer.');
+                    });
+                    //if (isOnline)
+                    //{
+                    //    $('#loadingCaseFromTheServer').attr(
+                    //    {
+                    //        'page': '#login',
+                    //        'pageError': '#settings_localStorage'
+                    //    });
+
+                    //    jQT.goToLeft('#loadingCaseFromTheServer');
+                    //}
+                    //else jQT.goToLeft('#login');
+                    //jQT.goToLeft('#login');
+                });
+            });
+        }
+	    else if (!String.isNullOrEmpty(customer.val()))
 	    {
 	        new customerSelect().newCustomer(customer.val(), 
             function()
@@ -887,6 +876,9 @@ function setupLinks()
 		//imgLoaderView.css('display','none');
 		imgLoaderView.show();
 		background.show();
+
+
+        //alert(obj.errorCode);
 
 		saveCaseViewDetail('#caseView', function()
 		{
@@ -2059,7 +2051,7 @@ function setupLinks()
 	        $('#caseDetailList_imaging_List ul.imagingList').empty();
 	        new caseView().getPhotoList(caseId, category, function(photoList)
 	        {
-	        	set|ut(function()
+	        	setTimeout(function()
 				{
 					background.hide();				
 					loadPhotoList('PreOp', photoList);
@@ -2821,7 +2813,6 @@ function loadUserData()
 {
     var currentSessionObj = new currentSession().get();
     $('.customerFooter H1').html(currentSessionObj.customer);
-<<<<<<< HEAD
 
     if (currentSessionObj != null)
     {
@@ -2830,16 +2821,6 @@ function loadUserData()
     }
     else
     {
-=======
-
-    if (currentSessionObj != null)
-    {
-        loadSettings();
-        loadListCaseView();
-    }
-    else
-    {
->>>>>>> Commit Feb 4
         logout();
         jQT.goToRight('#login');
     }
@@ -3307,8 +3288,8 @@ function getCaseView(filter, onComplete)
 
     function caseViewGetList(sortBy, viewBy)
     {
-        if (sortBy) $(String.format('#sortCaseBy ul.rounded:first li:last a[sortBy={0}]', sortBy)).parent().addClass('selected');
-        else $('#sortCaseBy ul.rounded:first li:last').addClass('selected');
+        if (sortBy) $(String.format('#sortCaseBy ul.rounded:first li:first a[sortBy={0}]', sortBy)).parent().addClass('selected');
+        else $('#sortCaseBy ul.rounded:first li:first').addClass('selected');
 
         if (viewBy) $(String.format('#sortCaseBy #ulCaseViewViewBy li a[viewBy={0}]', viewBy)).parent().addClass('selected');
         else $('#sortCaseBy #ulCaseViewViewBy li:first').addClass('selected');
@@ -3401,7 +3382,8 @@ function loadCaseView(ul, caseViews)
             caseViewItem.hour,
             procTypeName,   //caseViewItem.procTypeID,
             caseViewItem.usageStatusCode,
-            caseViewItem.usageStatus
+            caseViewItem.usageStatus,
+            caseViewItem.noSave
         );
 
         var a = $(caseViewModelItemInfo);
@@ -3658,13 +3640,8 @@ function saveCaseViewDetail(page, onComplete)
         },
         function()
         {
-<<<<<<< HEAD
-        	$('#lblError').html('Error');
-            $.alert('Error to save case detail');
-=======
         	var caseIdOff = $('.caseDetailListID').html();
             $('#caseNoSave').html(caseIdOff);
->>>>>>> Commit Feb 4
         });
     }
     else
