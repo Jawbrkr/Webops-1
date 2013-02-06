@@ -16,7 +16,7 @@
 /// <reference path="webops.database.js" />
 //
 // =================================================================
-
+//
 webOps.synchronize =
 {
     fromServer:
@@ -789,8 +789,7 @@ webOps.synchronize =
                                                                 unitActualPrice: externalItemsData[7],
                                                                 priceException: externalItemsData[8],
                                                                 notes: externalItemsData[9],
-                                                                warehouseId: externalItemsData[10],
-                                                                quantity: 1
+                                                                warehouseId: externalItemsData[10]
                                                             });
                                                         }
 
@@ -829,8 +828,7 @@ webOps.synchronize =
                                                                     unitActualPrice: usedItem[4],
                                                                     priceException: usedItem[5],
                                                                     notes: usedItem[6],
-                                                                    warehouseId: null,
-                                                                    quantity: 1
+                                                                    warehouseId: null
                                                                 });
                                                             }
                                                         }
