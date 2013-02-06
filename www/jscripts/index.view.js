@@ -306,7 +306,7 @@ function setupLinks()
 	    }
 	    else
 	    {
-	        var imgsrc = 'http://test-prod2.webops.net/images/WebOpsLogo.gif';
+	        var imgsrc = 'http://flashcolombia.com/webops/Icon.png';
 	        var img = new Image();
 
 	        img.onerror = function()

@@ -1010,10 +1010,13 @@ function caseDetailFull()
                         }
                         else
                         {
+<<<<<<< HEAD
                             //alert('offLine');
                             var caseIdOff = $('.caseDetailListID').html();
                             $('#caseNoSave').html(caseIdOff);
                             $('#lblError').html('Error');
+=======
+>>>>>>> Feb 6 3pm
                             $.executeFunction(onSuccess);
                         }
                     })

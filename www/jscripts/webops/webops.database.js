@@ -16,7 +16,11 @@
 
 webOps.database =
 {
+<<<<<<< HEAD
     version: '1.125',
+=======
+    version: '1.130',
+>>>>>>> Feb 6 3pm
     sqlDatabase: null,
     versionSchema:
     {
