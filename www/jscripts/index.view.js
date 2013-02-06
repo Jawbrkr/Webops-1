@@ -997,6 +997,7 @@ function setupLinks()
 
 	$('#caseDetailList_physician').bind('pageAnimationEnd', function(event, info)
 	{
+                                        $.log('Physician[pageAnimationEnd]');
 	    if (info.direction == 'in')
 	    {
 	        var id = $('#lblCaseDetailListPhysician').attr('dataid');
@@ -1011,12 +1012,15 @@ function setupLinks()
 	$('#caseDetailList_physician ul.rounded li a').live('tap', function(e)
 	{
 	    e.stopPropagation();
+        $.log('Physician[tap]');
 
 	    $('#caseDetailList_physician ul.rounded li').removeClass('selected');
 	    $(this).parent().addClass('selected');
 
 	    var id = $(this).attr('dataid');
 	    var name = $(this).find('label').html();
+                                                        
+        $.log('Physician[tapped]: '+name+'('+id+')');
 
 	    $('#lblCaseDetailListPhysician').attr('dataid', id).html(name);
 	    jQT.goToRight('#caseDetailList');
@@ -3259,6 +3263,9 @@ function getCaseView(filter, onComplete)
 
         var startDate = moment($('.dateStart').attr('date'), 'YYYYMMDDHHmm');
         var endDate = moment($('.dateEnd').attr('date'), 'YYYYMMDDHHmm');
+        
+        $.log('Sort: '+sortBy);
+        $.log('View: '+viewBy);
 
         new caseView().getList(sortBy, viewBy, filter, startDate, endDate,
             function(caseViews)
@@ -3321,7 +3328,7 @@ function loadCaseView(ul, caseViews)
                 </div> \
                 <div class="detail"> \
                     <label>{7}</label> \
-                    <small class="caseView-detail-status-{8}">{9}</small> \
+                    <small class="caseView-detail-{10}">{11}</small><small class="caseView-detail-status-{8}">{9}</small> \
                 </div> \
             </a> \
         </li>';
@@ -3333,6 +3340,28 @@ function loadCaseView(ul, caseViews)
             hospitalName = $(String.format('#caseDetailList_hospital ul.rounded li > a[dataid={0}]', caseViewItem.hospitalID)).find('label').html(),
             physicianName = $(String.format('#caseDetailList_physician ul.rounded li > a[dataid={0}]', caseViewItem.physicianID)).find('label').html(),
             procTypeName = $(String.format('#caseDetailList_procedure ul.rounded li > a[dataid={0}]', caseViewItem.procTypeID)).find('label').html();
+        
+        var billingStatus = 'billing-';
+        
+        if ( caseViewItem.usageStatusCode == 1 || caseViewItem.usageStatusCode == 2 ) {
+            billingStatus += caseViewItem.usageStatusCode;
+        } else if (caseViewItem.po != undefined && caseViewItem.po != '') {
+            billingStatus += '3';
+        }
+                                          
+                                          /*
+                                           "WO (1-30) - The write up has been provided by Rick early, but to recap what was provided for the usage check marks: the usageStatus field returned for cases has it.
+                                           
+                                           Responses from getCaseHeaders, getCaseDetail1, and getCaseDetailFull all contain a property called usageStatus.
+                                           
+                                           •        If usage has not been entered (no checkmark), this is 0 (zero).
+                                           •        If usage has been entered but usage has not been reordered (blue checkmark), this is 1 (one)
+                                           •        If usage has been entered and usage has been reordered (green checkmark), this is 2 (two)
+                                           
+                                           "
+                                           */
+                                          
+                                          //$.log('PO: ' + JSON.stringify(caseViewItem, null, 4));
 
         var caseViewModelItemInfo = li.format
         (
@@ -3345,7 +3374,9 @@ function loadCaseView(ul, caseViews)
             caseViewItem.hour,
             procTypeName,   //caseViewItem.procTypeID,
             caseViewItem.usageStatusCode,
-            caseViewItem.usageStatus
+            caseViewItem.usageStatus,
+            billingStatus,
+            '&nbsp;'
         );
 
         var a = $(caseViewModelItemInfo);
@@ -3789,6 +3820,7 @@ function conditionLoadProductSystemCategories()
 {
     var categories = [];
     var dataproductcatids = $('#lblCaseDetailListProcedure').attr('dataproductcatids');
+                                          $.log('Update Product System Categories for Procedure ' + dataproductcatids);
 
     if (dataproductcatids && dataproductcatids.length > 0)
         categories = dataproductcatids.split(',');

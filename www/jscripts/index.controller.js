@@ -396,10 +396,12 @@ function loadingCaseFromTheServer(invokeFrom, dateStart, dateEnd, onSuccess, onE
                 )
                 .done(function()
                 {
+                    $.log('### run this');
                     $.when
                     (
                         webOps.synchronize.fromServer.caseDetailFull(customer, userId, sessionId),
-                        webOps.synchronize.fromServer.assignedKits(customer, userId, sessionId)
+                        webOps.synchronize.fromServer.assignedKits(customer, userId, sessionId),
+                        webOps.synchronize.fromServer.physicians(customer, userId, sessionId)
                         //webOps.synchronize.fromServer.casePhotoList(customer, userId, sessionId)
                     )
                     .done(function()
@@ -601,6 +603,8 @@ function caseView()
                             var procDateTime2 = (caseViewHeaderItem.procDateTime || '').split('||');
                             var hour = String.format('{0}:{1} {2}', Number(procDateTime2[3]) < 12 ? Number(procDateTime2[3]) : Number(procDateTime2[3]) - 12, procDateTime2[4], (parseInt(procDateTime2[3]) < 12 ? 'AM' : 'PM'));
 
+                      //$.log( JSON.stringify(caseViewHeaderItem, null, 4));
+                      
                             var obj =
                             {
                                 id: caseViewHeaderItem.id,
@@ -611,8 +615,11 @@ function caseView()
                                 hour: hour,
                                 procTypeID: caseViewHeaderItem.procTypeID,
                                 usageStatusCode: caseViewHeaderItem.caseStatusID,
-                                usageStatus: caseStatusCodesByCode(caseViewHeaderItem.caseStatusID)
+                                usageStatus: caseStatusCodesByCode(caseViewHeaderItem.caseStatusID),
+                                po: caseViewHeaderItem.po
                             };
+                      
+                            //$.log('-- Object[Usage Status]: ' + obj.usageStatus + '; Code: ' + obj.usageStatusCode);
 
                             arr.push(obj);
                         }

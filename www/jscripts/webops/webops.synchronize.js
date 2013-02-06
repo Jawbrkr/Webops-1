@@ -107,6 +107,7 @@ webOps.synchronize =
         {
             var numRecords = 999;
             var requestNum = 0;
+            $.log('####### Tapping web-to-local physicians');
 
             return $.Deferred(function(deferred)
             {

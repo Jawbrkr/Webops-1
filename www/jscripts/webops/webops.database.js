@@ -80,7 +80,7 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS salesReps(userId INTEGER NOT NULL, salesRepID INTEGER NOT NULL, salesRepName TEXT NOT NULL, warehouseId INT NOT NULL, hospitalIds TEXT, physicianIds TEXT)');
 
                     $.log('CREATE TABLE physicians');
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS physicians(userId INTEGER NOT NULL, fullName TEXT NOT NULL, id INTEGER NOT NULL, physicianPrefs TEXT)');
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS physicians(userId INTEGER NOT NULL, fullName TEXT NOT NULL, id INTEGER NOT NULL, physicianPrefs TEXT, PRIMARY KEY(userId, id))');
 
                     $.log('CREATE TABLE hospitals');
                     tx.executeSql('CREATE TABLE IF NOT EXISTS hospitals(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, warehouseId INTEGER)');
@@ -811,7 +811,22 @@ webOps.database.tables.caseHeaders =
         return $.Deferred(function(deferred)
         {
             //var sql = 'SELECT userId, modifiedDate, activityDesc, activityLevel, complications, consequences, consequencesDesc, contactName, decontamination, eventDesc, eventLocation, heightUnits, implantRevision, notReturned, patientHeight, patientWeight, products, returned, surgicalApproach, weightUnits, caseStatusID, dob, errorCode, freight, hospitalID, id, notes, patient, physicianID, procDateTime, procTypeID, salesRepID, sex, survey, usageStatus, usageTimestamp, timestamp FROM caseHeaders WHERE userId = ? AND (id LIKE \'%' + filter + '%\' OR hospitalID LIKE \'%' + filter + '%\' OR physicianID LIKE \'%' + filter + '%\' OR procTypeID LIKE \'%' + filter + '%\' OR patient LIKE \'%' + filter + '%\') ORDER BY ' + ((sortBy) ? sortBy : 'timestamp');
+            
+            
 
+            // new (Jesse: Feb 6, 2013 -- added PO from caseDetailFull LEFT JOIN)
+            var sql = 'SELECT C.userId, C.modifiedDate, C.activityDesc, C.activityLevel, C.complications, C.consequences, C.consequencesDesc, C.contactName, C.decontamination, C.eventDesc, C.eventLocation, C.heightUnits, C.implantRevision, C.notReturned, C.patientHeight, C.patientWeight, C.products, C.returned, C.surgicalApproach, C.weightUnits, C.caseStatusID, C.dob, C.errorCode, C.freight, C.hospitalID, C.id, C.notes, C.patient, C.physicianID, C.procDateTime, C.procTypeID, C.salesRepID, C.sex, C.survey, C.usageStatus, C.usageTimestamp, C.timestamp, CDF.po ' +
+                      ' FROM caseHeaders as C ' +
+                      'INNER JOIN hospitals AS H ON C.userId = H.userId AND C.hospitalID = H.id ' +
+                      'INNER JOIN physicians AS P ON C.userId = P.userId AND C.physicianID = P.id ' +
+                      'LEFT JOIN procedures AS PR ON C.userId = PR.userId AND C.procTypeID = PR.id ' +
+                      'LEFT JOIN caseDetailFull AS CDF ON C.id = CDF.id ' +
+                      'WHERE C.userId = ? AND (C.id LIKE \'%' + filter + '%\' OR H.name LIKE \'%' + filter + '%\' OR P.fullName LIKE \'%' + filter + '%\' OR PR.name LIKE \'%' + filter + '%\' OR C.patient LIKE \'%' + filter + '%\') ' +
+                      'AND (C.timestamp >= ' + t1 + ' AND C.timestamp <= ' + t2 + ') ' +
+                      'ORDER BY ' + ((sortBy) ? String(sortBy).replace('_', '.') : 'C.procTypeID');
+                      
+                      
+            /*
             // new (Alex)
             var sql = 'SELECT C.userId, C.modifiedDate, C.activityDesc, C.activityLevel, C.complications, C.consequences, C.consequencesDesc, C.contactName, C.decontamination, C.eventDesc, C.eventLocation, C.heightUnits, C.implantRevision, C.notReturned, C.patientHeight, C.patientWeight, C.products, C.returned, C.surgicalApproach, C.weightUnits, C.caseStatusID, C.dob, C.errorCode, C.freight, C.hospitalID, C.id, C.notes, C.patient, C.physicianID, C.procDateTime, C.procTypeID, C.salesRepID, C.sex, C.survey, C.usageStatus, C.usageTimestamp, C.timestamp ' +
                       ' FROM caseHeaders as C ' +
@@ -821,6 +836,7 @@ webOps.database.tables.caseHeaders =
                       'WHERE C.userId = ? AND (C.id LIKE \'%' + filter + '%\' OR H.name LIKE \'%' + filter + '%\' OR P.fullName LIKE \'%' + filter + '%\' OR PR.name LIKE \'%' + filter + '%\' OR C.patient LIKE \'%' + filter + '%\') ' +
                       'AND (timestamp >= ' + t1 + ' AND timestamp <= ' + t2 + ') ' +
                       'ORDER BY ' + ((sortBy) ? String(sortBy).replace('_', '.') : 'C.procTypeID');
+            */
 
             /*
             var sql = 'SELECT C.userId, C.modifiedDate, C.activityDesc, C.activityLevel, C.complications, C.consequences, C.consequencesDesc, C.contactName, C.decontamination, C.eventDesc, C.eventLocation, C.heightUnits, C.implantRevision, C.notReturned, C.patientHeight, C.patientWeight, C.products, C.returned, C.surgicalApproach, C.weightUnits, C.caseStatusID, C.dob, C.errorCode, C.freight, C.hospitalID, C.id, C.notes, C.patient, C.physicianID, C.procDateTime, C.procTypeID, C.salesRepID, C.sex, C.survey, C.usageStatus, C.usageTimestamp, C.timestamp ' +
@@ -2286,7 +2302,7 @@ webOps.database.tables.physicians =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT INTO physicians (userId, fullName, id, physicianPrefs) VALUES (?, ?, ?, ?)';
+            var sql = 'INSERT OR REPLACE INTO physicians (userId, fullName, id, physicianPrefs) VALUES (?, ?, ?, ?)';
             var params = [userId];
             var properties = ['fullName', 'id', 'physicianPrefs'];
 

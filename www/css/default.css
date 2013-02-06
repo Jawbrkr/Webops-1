@@ -2069,7 +2069,7 @@ body
                         }
 
             /* line 280, ../scss/include/_skeleton.scss */
-            #jqt ul li small
+            #jqt ul li small, #jqt ul li small input
             {
                 /*<custom-webops>*/
                 /*
@@ -3413,6 +3413,45 @@ html, body
 .caseView-detail-status-9
 {
     background: transparent url(img/status/cancelled.png) no-repeat right center;
+    -o-background-size: contain;
+    background-size: contain;
+    -moz-background-size: contain;
+    -webkit-background-size: contain;
+}
+
+
+/* Billing Icons
+1 Usage Received
+2 Usage Reordered
+3 PO Received
+*/
+
+.caseView-detail-billing-
+{
+    display: none;
+}
+/*1 Usage Received*/
+.caseView-detail-billing-1
+{
+    background: transparent url(img/status/usage-received.png) no-repeat right center;
+    -o-background-size: contain;
+    background-size: contain;
+    -moz-background-size: contain;
+    -webkit-background-size: contain;
+}
+/*2 Usage Reordered*/
+.caseView-detail-billing-2
+{
+    background: transparent url(img/status/usage-reordered.png) no-repeat right center;
+    -o-background-size: contain;
+    background-size: contain;
+    -moz-background-size: contain;
+    -webkit-background-size: contain;
+}
+/*3 PO Received*/
+.caseView-detail-billing-3
+{
+    background: transparent url(img/status/po-received.png) no-repeat right center;
     -o-background-size: contain;
     background-size: contain;
     -moz-background-size: contain;
