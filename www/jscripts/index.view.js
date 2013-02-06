@@ -389,41 +389,7 @@ function setupLinks()
 	$('#btnCustomerSelect').off().on('tap', function()
 	{
 	    var customer = $('#txtCustomer');
-        if ($('#customerSelect ul#ulCustomerSelect').html().length > 1)
-        {
-            $.confirm('A new account has been detected.  By clicking OK, you will delete all case data and download the case data associated with the new account.', function()
-            {                
-                var isOnline = false;
-                new settings().resetEverythingAllData(isOnline, true, function()
-                {
-                    //$('#lblCustomer').html('');
-                    //customer.val('');
-                    new customerSelect().newCustomer(customer.val(), 
-                    function()
-                    {
-                        customer.val('');
-                        loadCustomers();
-                    },
-                    function()
-                    {
-                        $.alert('Fail to create customer.');
-                    });
-                    //if (isOnline)
-                    //{
-                    //    $('#loadingCaseFromTheServer').attr(
-                    //    {
-                    //        'page': '#login',
-                    //        'pageError': '#settings_localStorage'
-                    //    });
-
-                    //    jQT.goToLeft('#loadingCaseFromTheServer');
-                    //}
-                    //else jQT.goToLeft('#login');
-                    //jQT.goToLeft('#login');
-                });
-            });
-        }
-	    else if (!String.isNullOrEmpty(customer.val()))
+	    if (!String.isNullOrEmpty(customer.val()))
 	    {
 	        new customerSelect().newCustomer(customer.val(), 
             function()
@@ -876,9 +842,6 @@ function setupLinks()
 		//imgLoaderView.css('display','none');
 		imgLoaderView.show();
 		background.show();
-
-
-        //alert(obj.errorCode);
 
 		saveCaseViewDetail('#caseView', function()
 		{
@@ -2051,7 +2014,7 @@ function setupLinks()
 	        $('#caseDetailList_imaging_List ul.imagingList').empty();
 	        new caseView().getPhotoList(caseId, category, function(photoList)
 	        {
-	        	setTimeout(function()
+	        	set|ut(function()
 				{
 					background.hide();				
 					loadPhotoList('PreOp', photoList);
@@ -3288,8 +3251,8 @@ function getCaseView(filter, onComplete)
 
     function caseViewGetList(sortBy, viewBy)
     {
-        if (sortBy) $(String.format('#sortCaseBy ul.rounded:first li:first a[sortBy={0}]', sortBy)).parent().addClass('selected');
-        else $('#sortCaseBy ul.rounded:first li:first').addClass('selected');
+        if (sortBy) $(String.format('#sortCaseBy ul.rounded:first li:last a[sortBy={0}]', sortBy)).parent().addClass('selected');
+        else $('#sortCaseBy ul.rounded:first li:last').addClass('selected');
 
         if (viewBy) $(String.format('#sortCaseBy #ulCaseViewViewBy li a[viewBy={0}]', viewBy)).parent().addClass('selected');
         else $('#sortCaseBy #ulCaseViewViewBy li:first').addClass('selected');
@@ -3382,8 +3345,7 @@ function loadCaseView(ul, caseViews)
             caseViewItem.hour,
             procTypeName,   //caseViewItem.procTypeID,
             caseViewItem.usageStatusCode,
-            caseViewItem.usageStatus,
-            caseViewItem.noSave
+            caseViewItem.usageStatus
         );
 
         var a = $(caseViewModelItemInfo);
@@ -3640,8 +3602,8 @@ function saveCaseViewDetail(page, onComplete)
         },
         function()
         {
-        	var caseIdOff = $('.caseDetailListID').html();
-            $('#caseNoSave').html(caseIdOff);
+        	$('#lblError').html('Error');
+            $.alert('Error to save case detail');
         });
     }
     else

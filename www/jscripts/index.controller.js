@@ -258,7 +258,7 @@ function logout()
     {
         init: function()
         {
-            //webOps.database.tables.currentSession.remove();
+            webOps.database.tables.currentSession.remove();
         }
     });
 }
@@ -599,7 +599,7 @@ function caseView()
 
                             var dateView = moment(caseViewHeaderItem.procDateTime,"YYYY||MM||DD").format('MMM DD, YYYY');
                             var procDateTime2 = (caseViewHeaderItem.procDateTime || '').split('||');
-                            var hour = String.format('{0}:{1} {2}', Number(procDateTime2[3]) < 12 ? Number(procDateTime2[3]) == 0 ? 12 : Number(procDateTime2[3]) : Number(procDateTime2[3]) - 12 == 0 ? 12 : Number(procDateTime2[3]) - 12 , procDateTime2[4], (parseInt(procDateTime2[3]) < 12 ? 'AM' : 'PM'));
+                            var hour = String.format('{0}:{1} {2}', Number(procDateTime2[3]) < 12 ? Number(procDateTime2[3]) : Number(procDateTime2[3]) - 12, procDateTime2[4], (parseInt(procDateTime2[3]) < 12 ? 'AM' : 'PM'));
 
                             var obj =
                             {
@@ -611,8 +611,7 @@ function caseView()
                                 hour: hour,
                                 procTypeID: caseViewHeaderItem.procTypeID,
                                 usageStatusCode: caseViewHeaderItem.caseStatusID,
-                                usageStatus: caseStatusCodesByCode(caseViewHeaderItem.caseStatusID),
-                                noSave: caseViewHeaderItem.noSave
+                                usageStatus: caseStatusCodesByCode(caseViewHeaderItem.caseStatusID)
                             };
 
                             arr.push(obj);
@@ -957,7 +956,7 @@ function caseDetailFull()
 
                 if (!String.isNullOrEmpty(caseId) && Number(caseId) > 0)
                 {
-                    $('#caseNoSave').html('');
+                    $('#lblError').html('');
                     $.when
                     (
                         webOps.database.tables.caseDetailFull.update(userId, caseId, data.caseStatusID, data.salesRepID, data.procDateTime, data.hospitalID, data.physicianID, data.procTypeID, data.assignedProdSystems, data.patient, data.dob, data.sex, data.ageOfPatient, data.po, data.notes, data.freight, data.totalPrice),
@@ -968,7 +967,7 @@ function caseDetailFull()
                         // Validate mode onLine.
                         if (webOps.database.tables.setUp.select().appModeOnLine)
                         {
-                            $('#caseNoSave').html('');
+                            $('#lblError').html('');
 
                             /*var assignedProdSystemsArray = [];
                             var assignedProdSystems = data.assignedProdSystems.split(',');
@@ -1012,27 +1011,10 @@ function caseDetailFull()
                         else
                         {
                             //alert('offLine');
-                            var caseId = $('.caseDetailListID').html();
-                            var asterisk = '*';
-                            var userId = webOps.database.tables.currentSession.select().userId;
-
-                            $.when(webOps.database.tables.usage.save(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, notes))
-                            .done(function()
-                            {
-                                $.executeFunction(onSuccess);
-                            })
-                            .fail(function()
-                            {
-                                $.executeFunction(onError);
-                            });
-
-
-
-
-                            //var caseIdOff = $('.caseDetailListID').html();
+                            var caseIdOff = $('.caseDetailListID').html();
                             $('#caseNoSave').html(caseIdOff);
                             $('#lblError').html('Error');
-                            //$.executeFunction(onSuccess);
+                            $.executeFunction(onSuccess);
                         }
                     })
                     .fail(function()

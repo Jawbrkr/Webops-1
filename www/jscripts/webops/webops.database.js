@@ -16,7 +16,7 @@
 
 webOps.database =
 {
-    version: '1.128',
+    version: '1.125',
     sqlDatabase: null,
     versionSchema:
     {
@@ -99,7 +99,7 @@ webOps.database =
                                     decontamination TEXT, eventDesc TEXT, eventLocation TEXT, heightUnits INTEGER, implantRevision TEXT, notReturned TEXT, \
                                     patientHeight INTEGER, patientWeight INTEGER, products TEXT, returned INTEGER, surgicalApproach INTEGER, weightUnits INTEGER, \
                                     caseStatusID INTEGER, dob INTEGER, errorCode INTEGER, freight FLOAT, hospitalID INTEGER, id INTEGER NOT NULL, notes TEXT, patient TEXT, \
-                                    physicianID INTEGER, procDateTime TEXT, procTypeID INTEGER, salesRepID INTEGER, sex TEXT, survey INTEGER, usageStatus INTEGER, noSave TEXT, usageTimestamp TEXT, \
+                                    physicianID INTEGER, procDateTime TEXT, procTypeID INTEGER, salesRepID INTEGER, sex TEXT, survey INTEGER, usageStatus INTEGER, usageTimestamp TEXT, \
                                     timestamp NUMERIC, updateDetail BOOLEAN, PRIMARY KEY(userId, id) )');
 
                     $.log('CREATE TABLE caseDetailFull');
@@ -110,7 +110,7 @@ webOps.database =
                                     ageOfPatient INTEGER, assignedInventoryItems TEXT, assignedKits TEXT, assignedProdSystems TEXT, caseStatusID INTEGER, \
                                     dob INTEGER, errorCode INTEGER, externalItems TEXT, freight FLOAT, hasCapPrice FLOAT, hospitalID INTEGER, id INTEGER NOT NULL, \
                                     notes TEXT, patient TEXT, physicianID INTEGER, po TEXT, procDateTime TEXT, procTypeID INTEGER, salesRepID INTEGER, sex TEXT, \
-                                    survey INTEGER, totalPrice FLOAT, usageStatus INTEGER, usageTimestamp TEXT, usedItems TEXT, noSave TEXT, \
+                                    survey INTEGER, totalPrice FLOAT, usageStatus INTEGER, usageTimestamp TEXT, usedItems TEXT, \
                                     timestamp NUMERIC, PRIMARY KEY(userId, id) )');
 
                     $.log('CREATE TABLE assignedKits');
@@ -804,7 +804,7 @@ webOps.database.tables.caseHeaders =
                       'LEFT JOIN procedures AS PR ON C.userId = PR.userId AND C.procTypeID = PR.id ' +
                       'WHERE C.userId = ? AND (C.id LIKE \'%' + filter + '%\' OR H.name LIKE \'%' + filter + '%\' OR P.fullName LIKE \'%' + filter + '%\' OR PR.name LIKE \'%' + filter + '%\' OR C.patient LIKE \'%' + filter + '%\') ' +
                       'AND (timestamp >= ' + t1 + ' AND timestamp <= ' + t2 + ') ' +
-                      'ORDER BY ' + ((sortBy) ? String(sortBy).replace('_', '.') : 'timestamp');
+                      'ORDER BY ' + ((sortBy) ? String(sortBy).replace('_', '.') : 'C.procTypeID');
 
             /*
             var sql = 'SELECT C.userId, C.modifiedDate, C.activityDesc, C.activityLevel, C.complications, C.consequences, C.consequencesDesc, C.contactName, C.decontamination, C.eventDesc, C.eventLocation, C.heightUnits, C.implantRevision, C.notReturned, C.patientHeight, C.patientWeight, C.products, C.returned, C.surgicalApproach, C.weightUnits, C.caseStatusID, C.dob, C.errorCode, C.freight, C.hospitalID, C.id, C.notes, C.patient, C.physicianID, C.procDateTime, C.procTypeID, C.salesRepID, C.sex, C.survey, C.usageStatus, C.usageTimestamp, C.timestamp ' +
