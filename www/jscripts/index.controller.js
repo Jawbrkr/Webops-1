@@ -1201,11 +1201,49 @@ function caseDetailFull()
                         }
                         else
                         {
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
                             //alert('offLine');
                             var caseIdOff = $('.caseDetailListID').html();
                             $('#caseNoSave').html(caseIdOff);
                             $('#lblError').html('Error');
+=======
+>>>>>>> Feb 6 3pm
                             $.executeFunction(onSuccess);
+=======
+=======
+>>>>>>> Revert "Revert "Revert "Feb 6 3pm"""
+                            //alert('offLine');
+                            var caseId = $('.caseDetailListID').html();
+                            var asterisk = '*';
+                            var userId = webOps.database.tables.currentSession.select().userId;
+
+                            $.when(webOps.database.tables.usage.save(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, notes))
+                            .done(function()
+                            {
+                                $.executeFunction(onSuccess);
+                            })
+                            .fail(function()
+                            {
+                                $.executeFunction(onError);
+                            });
+
+
+
+
+                            //var caseIdOff = $('.caseDetailListID').html();
+                            $('#caseNoSave').html(caseIdOff);
+                            $('#lblError').html('Error');
+                            //$.executeFunction(onSuccess);
+<<<<<<< HEAD
+>>>>>>> Revert "Feb 6 3pm"
+=======
+                            $.executeFunction(onSuccess);
+>>>>>>> Revert "Revert "Feb 6 3pm""
+=======
+>>>>>>> Revert "Revert "Revert "Feb 6 3pm"""
                         }
                     })
                     .fail(function()
