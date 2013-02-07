@@ -400,8 +400,8 @@ function loadingCaseFromTheServer(invokeFrom, dateStart, dateEnd, onSuccess, onE
                     $.when
                     (
                         webOps.synchronize.fromServer.caseDetailFull(customer, userId, sessionId),
-                        webOps.synchronize.fromServer.assignedKits(customer, userId, sessionId),
-                        webOps.synchronize.fromServer.physicians(customer, userId, sessionId)
+                        webOps.synchronize.fromServer.assignedKits(customer, userId, sessionId)
+                        //webOps.synchronize.fromServer.physicians(customer, userId, sessionId)
                         //webOps.synchronize.fromServer.casePhotoList(customer, userId, sessionId)
                     )
                     .done(function()
@@ -444,7 +444,6 @@ function loadingCaseFromTheServer(invokeFrom, dateStart, dateEnd, onSuccess, onE
         }
     });
 }
-
 
 function imagingFromTheServer(caseId, onSuccess, onError)
 {
@@ -557,6 +556,89 @@ function settings()
                 }
             }
         });
+    }
+}
+
+function physicianPrefs()
+{
+    this.load = function(hospitalID, physicianID, procTypeID, onSuccess, onError)
+    {
+        return $.tryCatch(
+        {
+            init: function()
+            {
+                //var userId = webOps.database.tables.currentSession.select().userId;
+                
+                $.when
+                (
+                    webOps.database.tables.physicians.selectPrefs(physicianID)
+                )
+                .done(function(prefs)
+                {
+                    $.executeFunction(onSuccess, parse(prefs));
+                })
+                .fail(function()
+                {
+                    $.executeFunction(onError);
+                });
+                
+                function parse(prefsObj)
+                {
+                    var prefsString = prefsObj.physicianPrefs;
+                    var arr = [];
+                    
+                    if (String.isNullOrEmpty(prefsString)) return;
+                    
+                    // Check for comma, if present, split
+                    if ( prefsString.indexOf(',') > -1 )
+                    {
+                        var prefs = prefsString.split(',');
+                    }
+                    else
+                    {
+                        var prefs = [prefsString];
+                    }
+                    
+                    // Check for pipes
+                    for (var i = 0; i < prefs.length; i++)
+                    {
+                        //<PROCEDURE_ID>||<HOSPITAL_ID>||<NOTE>||[<PRODUCT_SYSTEM_ID>||]*
+                        
+                        var pref = prefs[i].split('||');
+                        
+                        // If procedure is our chosen procedure and either our hospital is our chosen hospital or the preference is for all
+                        // hospitals, then add the preference to an array
+                        if (
+                            ( procTypeID && procTypeID == pref[0] ) &&
+                            ( hospitalID == pref[1] || pref[1] == 0 )
+                        ) {
+                            
+                            var obj =
+                            {
+                                procTypeID: pref[0],
+                                hospitalID: pref[1],
+                                note: pref[2],
+                                productSystems: []
+                            };
+                            
+                            for (var p = 3; p < pref.length; p++)
+                            {
+                                obj.productSystems.push(pref[p]);
+                            }
+
+                            arr.push(obj);
+                        }
+                    }
+
+                    return arr;
+                }
+            }
+        });
+        
+    },
+    this.save = function()
+    {
+        // use postPhysicianPrefs method
     }
 }
 

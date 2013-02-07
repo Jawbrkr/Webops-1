@@ -80,7 +80,8 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS salesReps(userId INTEGER NOT NULL, salesRepID INTEGER NOT NULL, salesRepName TEXT NOT NULL, warehouseId INT NOT NULL, hospitalIds TEXT, physicianIds TEXT)');
 
                     $.log('CREATE TABLE physicians');
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS physicians(userId INTEGER NOT NULL, fullName TEXT NOT NULL, id INTEGER NOT NULL, physicianPrefs TEXT, PRIMARY KEY(userId, id))');
+                    //tx.executeSql('CREATE TABLE IF NOT EXISTS physicians(userId INTEGER NOT NULL, fullName TEXT NOT NULL, id INTEGER NOT NULL, physicianPrefs TEXT, PRIMARY KEY(userId, id))');
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS physicians(userId INTEGER NOT NULL, fullName TEXT NOT NULL, id INTEGER NOT NULL, physicianPrefs TEXT)');
 
                     $.log('CREATE TABLE hospitals');
                     tx.executeSql('CREATE TABLE IF NOT EXISTS hospitals(userId INTEGER NOT NULL, id INTEGER NOT NULL, name TEXT NOT NULL, warehouseId INTEGER)');
@@ -2302,7 +2303,8 @@ webOps.database.tables.physicians =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT OR REPLACE INTO physicians (userId, fullName, id, physicianPrefs) VALUES (?, ?, ?, ?)';
+            //var sql = 'INSERT OR REPLACE INTO physicians (userId, fullName, id, physicianPrefs) VALUES (?, ?, ?, ?)';
+            var sql = 'INSERT INTO physicians (userId, fullName, id, physicianPrefs) VALUES (?, ?, ?, ?)';
             var params = [userId];
             var properties = ['fullName', 'id', 'physicianPrefs'];
 
@@ -2339,6 +2341,29 @@ webOps.database.tables.physicians =
                     }
 
                     deferred.resolve(items);
+                },
+                function()
+                {
+                    deferred.reject();
+                }
+            );
+        }).promise();
+    },
+    //## Jesse Turner Feb 6, 2013
+    selectPrefs: function(id)
+    {
+        return $.Deferred(function(deferred)
+        {
+            // Limiting the Results to 1 because physicianPrefs should not be tied to Reps (userId), this helps to avoid conflicts in the event that
+            // a physician is assigned to multiple Reps.
+            // This keeps the obligation on the Web Service for providing accurate and up-to-date physicianPrefs.
+            var sql = 'SELECT physicianPrefs FROM physicians WHERE id = ? LIMIT 1';
+            var params = [id];
+
+            webOps.database.commands.executeReader(sql, params,
+                function(tx, data)
+                {
+                    deferred.resolve(data.rows.item(0));
                 },
                 function()
                 {

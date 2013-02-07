@@ -984,6 +984,9 @@ function setupLinks()
 	    var name = $(this).find('label').html();
 
 	    $('#lblCaseDetailListHospital').attr('dataid', id).html(name);
+        
+        getPhysicianPrefs();
+        
 	    jQT.goToRight('#caseDetailList');
 	});
 
@@ -997,7 +1000,8 @@ function setupLinks()
 
 	$('#caseDetailList_physician').bind('pageAnimationEnd', function(event, info)
 	{
-                                        $.log('Physician[pageAnimationEnd]');
+        $.log('Physician[pageAnimationEnd]');
+        
 	    if (info.direction == 'in')
 	    {
 	        var id = $('#lblCaseDetailListPhysician').attr('dataid');
@@ -1023,6 +1027,9 @@ function setupLinks()
         $.log('Physician[tapped]: '+name+'('+id+')');
 
 	    $('#lblCaseDetailListPhysician').attr('dataid', id).html(name);
+        
+        getPhysicianPrefs();
+        
 	    jQT.goToRight('#caseDetailList');
 	});
 
@@ -1059,6 +1066,9 @@ function setupLinks()
 	    var dataproductcatids = $(this).attr('dataproductcatids');
 
 	    $('#lblCaseDetailListProcedure').attr({ 'dataid': id, 'dataproductcatids': dataproductcatids }).html(name);
+        
+        getPhysicianPrefs();
+        
 	    jQT.goToRight('#caseDetailList');
 	});
 
@@ -2723,6 +2733,11 @@ function setupLinks()
     });
 }
 
+
+
+
+// ----------------------------------------------------------------------------------------------------------------------------------------------------
+// View Methods
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
 function checkboxToggle(anchor, data)
@@ -3617,7 +3632,18 @@ function saveCaseViewDetail(page, onComplete)
         notes: $('#txtCaseDetailListNotes').val().replace(/\n/gi, ""),
         freight: Number($('#txtPricingFreight').val()),
         totalPrice: Number($('#lblPricingTotal').html())
-    };    
+    };
+    
+    //## Save Create Preferences
+    // Jesse Turner Feb 6, 2013
+    
+    // if Preference selection, save ProductSystems, Hospital ID, Procedure, Physician using postPhysicianPrefs
+    // if () {}
+        //savePhysicianPrefs()
+        
+    // ! #############
+    //   Use above // Product Systems for Prefs
+    // ! #############
 
     // Validation case view detail data.
     if (saveCaseViewDetailValidation(data))
@@ -3809,6 +3835,96 @@ function conditionLoad()
     }
 }
 
+//## Manipulating Saved Preferences
+// Jesse Turner Feb 6, 2013
+function getPhysicianPrefs()
+{
+    //# Triggered on tapping a selection from Hospital, Procedure, or Physician
+    
+    // If Procedure && Physician
+    var hospitalID = $('#lblCaseDetailListHospital').attr('dataid');
+    var physicianID = $('#lblCaseDetailListPhysician').attr('dataid');
+    var procTypeID = $('#lblCaseDetailListProcedure').attr('dataid');
+    
+    if(!String.isNullOrEmpty(physicianID) && !String.isNullOrEmpty(procTypeID))
+    {
+        // All you have to do is set it to 0!!!!!
+        $('#lblCaseDetailListProductSystemCategory').text('(0)');
+        
+        new physicianPrefs().load(hospitalID, physicianID, procTypeID,
+            function(prefs)
+            {
+                if (!String.isNullOrEmpty(prefs))
+                {
+                    setProductSystemsFromPhysicianPrefs(prefs);
+                }
+            },
+            function()
+            {
+                //$.alert('Sorry no results found');
+            }
+        );
+    }
+}
+
+function setProductSystemsFromPhysicianPrefs(prefs)
+{
+    var name = $('#caseDetailList_procedure ul.rounded li a[dataid='+prefs[0].procTypeID+']').find('label').html();
+    var dataproductcatids = $('#caseDetailList_procedure ul.rounded li a[dataid='+prefs[0].procTypeID+']').attr('dataproductcatids');
+    var catids = dataproductcatids.split(',');
+    
+    for (var i = 0; i < catids.length; i++)
+    {
+        var catid = catids[i];
+        
+        $('#caseDetailList_productsSystemsCategory ul.rounded li a[dataid='+catid+']').attr({'dataproductsselected': prefs[0].productSystems.join(',')})
+    }
+    
+    setProductSystemsCountsFromPhysicianPrefs(prefs[0].procTypeID, prefs[0].productSystems);
+}
+
+function setProductSystemsCountsFromPhysicianPrefs(procTypeID, assignedProdSystems) {
+    conditionLoadProductSystemCategories();
+    
+    // Remove all selected products from product categories
+    $('#caseDetailList_productsSystemsCategory ul.rounded li[isValid] > a').each(function()
+    {
+        $(this).attr('dataproductsselected', '');
+    });
+
+    var assignedProdSystemsCount = 0;
+    
+    // Loop through each product system and category to set selected valid dataproductsselected
+    for (var i = 0; i < assignedProdSystems.length; i++)
+    {
+        var prodSystems = assignedProdSystems[i];
+        
+        if (prodSystems.length > 0 && !isNaN(parseInt(prodSystems)))
+        {
+            $(String.format('#caseDetailList_productsSystemsCategory ul.rounded li[isValid] > a[dataproducts*={0}]', prodSystems)).each(function()
+            {
+                var _this = $(this);
+                var productsSelected = (!String.isNullOrEmpty(_this.attr('dataproductsselected'))) ? _this.attr('dataproductsselected').split(',') : [];
+                
+                productsSelected.push(prodSystems);
+                _this.attr('dataproductsselected', productsSelected.join(','));
+
+                var count = Number(_this.find('span').html().replaceAll('[\(]', '').replaceAll('[\)]', '')) + 1;
+                _this.find('span').html(String.format('({0})', count));
+
+                assignedProdSystemsCount++;
+            });
+        }
+    }
+    
+    $('#lblCaseDetailListProductSystemCategory').text('(' + assignedProdSystemsCount + ')');
+}
+
+function savePhysicianPrefs()
+{
+    // physicianPrefs().save(onSuccess, onError);
+}
+//## End Manipulating Saved Preferences
 
 
 function conditionLoadStatus(list, params)
@@ -3820,7 +3936,7 @@ function conditionLoadProductSystemCategories()
 {
     var categories = [];
     var dataproductcatids = $('#lblCaseDetailListProcedure').attr('dataproductcatids');
-                                          $.log('Update Product System Categories for Procedure ' + dataproductcatids);
+    $.log('Update Product System Categories for Procedure ' + dataproductcatids);
 
     if (dataproductcatids && dataproductcatids.length > 0)
         categories = dataproductcatids.split(',');
