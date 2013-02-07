@@ -225,6 +225,23 @@ $.log = function(msg)
 	    return String.format('[{0}]', value);
 	};
 
+    String.character_limiter_ellipsis = String.prototype.character_limiter = function(str, n)
+    {
+        if( ! n) {
+            n = 500;
+        }
+        
+        str = str.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+        
+        if(str.length < n) {
+            return str;
+        }
+        
+        var trimStr = str.substr(0, n);
+        
+        return trimStr.substr(0, Math.min(trimStr.length, trimStr.lastIndexOf(' ')))+'&hellip;';
+    };
+
     // ****************************
     // Object
     // ****************************

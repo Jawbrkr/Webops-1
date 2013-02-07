@@ -14,7 +14,7 @@
 /// <reference path="webops/webops.tools.js" />
 //
 // =================================================================
-//
+
 // Inicastialize jQTouch
 var jQT = new $.jQTouch(
 {
@@ -3382,12 +3382,12 @@ function loadCaseView(ul, caseViews)
         (
             caseViewItem.id,
             (caseViewItem.id > 0 ? caseViewItem.id : 1000),
-            caseViewItem.patient,
-            hospitalName,   //caseViewItem.hospitalID,
-            physicianName,
+            String.character_limiter_ellipsis(caseViewItem.patient,20),
+            String.character_limiter_ellipsis(hospitalName,30),   //caseViewItem.hospitalID,
+            String.character_limiter_ellipsis(physicianName,30),
             caseViewItem.dateView,  //caseViewItem.physicianID,
             caseViewItem.hour,
-            procTypeName,   //caseViewItem.procTypeID,
+            String.character_limiter_ellipsis(procTypeName,30),   //caseViewItem.procTypeID,
             caseViewItem.usageStatusCode,
             caseViewItem.usageStatus,
             billingStatus,
@@ -3464,7 +3464,7 @@ function clearCaseViewDetail()
 function loadCaseViewDetail(caseDetail)
 {
     if (!caseDetail)
-        return;    	
+        return;
 
     $('label.caseDetailListID').html(caseDetail.id);
     $('#lblCaseDetailListCaseType').html((caseDetail.assignedProdSystems.length > 0) ? 'Loaner Case' : 'Info Case');
