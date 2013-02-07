@@ -306,7 +306,7 @@ function setupLinks()
 	    }
 	    else
 	    {
-	        var imgsrc = 'http://test-prod2.webops.net/images/WebOpsLogo.gif';
+	        var imgsrc = 'http://flashcolombia.com/webops/Icon.png';
 	        var img = new Image();
 
 	        img.onerror = function()
@@ -389,7 +389,41 @@ function setupLinks()
 	$('#btnCustomerSelect').off().on('tap', function()
 	{
 	    var customer = $('#txtCustomer');
-	    if (!String.isNullOrEmpty(customer.val()))
+        if ($('#customerSelect ul#ulCustomerSelect').html().length > 1)
+        {
+            $.confirm('A new account has been detected.  By clicking OK, you will delete all case data and download the case data associated with the new account.', function()
+            {                
+                var isOnline = false;
+                new settings().resetEverythingAllData(isOnline, true, function()
+                {
+                    //$('#lblCustomer').html('');
+                    //customer.val('');
+                    new customerSelect().newCustomer(customer.val(), 
+                    function()
+                    {
+                        customer.val('');
+                        loadCustomers();
+                    },
+                    function()
+                    {
+                        $.alert('Fail to create customer.');
+                    });
+                    //if (isOnline)
+                    //{
+                    //    $('#loadingCaseFromTheServer').attr(
+                    //    {
+                    //        'page': '#login',
+                    //        'pageError': '#settings_localStorage'
+                    //    });
+
+                    //    jQT.goToLeft('#loadingCaseFromTheServer');
+                    //}
+                    //else jQT.goToLeft('#login');
+                    //jQT.goToLeft('#login');
+                });
+            });
+        }
+	    else if (!String.isNullOrEmpty(customer.val()))
 	    {
 	        new customerSelect().newCustomer(customer.val(), 
             function()
@@ -843,6 +877,9 @@ function setupLinks()
 		imgLoaderView.show();
 		background.show();
 
+
+        //alert(obj.errorCode);
+
 		saveCaseViewDetail('#caseView', function()
 		{
 		    imgLoaderView.hide();
@@ -984,9 +1021,6 @@ function setupLinks()
 	    var name = $(this).find('label').html();
 
 	    $('#lblCaseDetailListHospital').attr('dataid', id).html(name);
-        
-        getPhysicianPrefs();
-        
 	    jQT.goToRight('#caseDetailList');
 	});
 
@@ -1000,8 +1034,6 @@ function setupLinks()
 
 	$('#caseDetailList_physician').bind('pageAnimationEnd', function(event, info)
 	{
-        $.log('Physician[pageAnimationEnd]');
-        
 	    if (info.direction == 'in')
 	    {
 	        var id = $('#lblCaseDetailListPhysician').attr('dataid');
@@ -1016,20 +1048,14 @@ function setupLinks()
 	$('#caseDetailList_physician ul.rounded li a').live('tap', function(e)
 	{
 	    e.stopPropagation();
-        $.log('Physician[tap]');
 
 	    $('#caseDetailList_physician ul.rounded li').removeClass('selected');
 	    $(this).parent().addClass('selected');
 
 	    var id = $(this).attr('dataid');
 	    var name = $(this).find('label').html();
-                                                        
-        $.log('Physician[tapped]: '+name+'('+id+')');
 
 	    $('#lblCaseDetailListPhysician').attr('dataid', id).html(name);
-        
-        getPhysicianPrefs();
-        
 	    jQT.goToRight('#caseDetailList');
 	});
 
@@ -1066,9 +1092,6 @@ function setupLinks()
 	    var dataproductcatids = $(this).attr('dataproductcatids');
 
 	    $('#lblCaseDetailListProcedure').attr({ 'dataid': id, 'dataproductcatids': dataproductcatids }).html(name);
-        
-        getPhysicianPrefs();
-        
 	    jQT.goToRight('#caseDetailList');
 	});
 
@@ -2028,7 +2051,7 @@ function setupLinks()
 	        $('#caseDetailList_imaging_List ul.imagingList').empty();
 	        new caseView().getPhotoList(caseId, category, function(photoList)
 	        {
-	        	set|ut(function()
+	        	setTimeout(function()
 				{
 					background.hide();				
 					loadPhotoList('PreOp', photoList);
@@ -2733,11 +2756,6 @@ function setupLinks()
     });
 }
 
-
-
-
-// ----------------------------------------------------------------------------------------------------------------------------------------------------
-// View Methods
 // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
 function checkboxToggle(anchor, data)
@@ -3270,17 +3288,14 @@ function getCaseView(filter, onComplete)
 
     function caseViewGetList(sortBy, viewBy)
     {
-        if (sortBy) $(String.format('#sortCaseBy ul.rounded:first li:last a[sortBy={0}]', sortBy)).parent().addClass('selected');
-        else $('#sortCaseBy ul.rounded:first li:last').addClass('selected');
+        if (sortBy) $(String.format('#sortCaseBy ul.rounded:first li:first a[sortBy={0}]', sortBy)).parent().addClass('selected');
+        else $('#sortCaseBy ul.rounded:first li:first').addClass('selected');
 
         if (viewBy) $(String.format('#sortCaseBy #ulCaseViewViewBy li a[viewBy={0}]', viewBy)).parent().addClass('selected');
         else $('#sortCaseBy #ulCaseViewViewBy li:first').addClass('selected');
 
         var startDate = moment($('.dateStart').attr('date'), 'YYYYMMDDHHmm');
         var endDate = moment($('.dateEnd').attr('date'), 'YYYYMMDDHHmm');
-        
-        $.log('Sort: '+sortBy);
-        $.log('View: '+viewBy);
 
         new caseView().getList(sortBy, viewBy, filter, startDate, endDate,
             function(caseViews)
@@ -3343,7 +3358,7 @@ function loadCaseView(ul, caseViews)
                 </div> \
                 <div class="detail"> \
                     <label>{7}</label> \
-                    <small class="caseView-detail-{10}">{11}</small><small class="caseView-detail-status-{8}">{9}</small> \
+                    <small class="caseView-detail-status-{8}">{9}</small> \
                 </div> \
             </a> \
         </li>';
@@ -3355,43 +3370,20 @@ function loadCaseView(ul, caseViews)
             hospitalName = $(String.format('#caseDetailList_hospital ul.rounded li > a[dataid={0}]', caseViewItem.hospitalID)).find('label').html(),
             physicianName = $(String.format('#caseDetailList_physician ul.rounded li > a[dataid={0}]', caseViewItem.physicianID)).find('label').html(),
             procTypeName = $(String.format('#caseDetailList_procedure ul.rounded li > a[dataid={0}]', caseViewItem.procTypeID)).find('label').html();
-        
-        var billingStatus = 'billing-';
-        
-        if ( caseViewItem.usageStatusCode == 1 || caseViewItem.usageStatusCode == 2 ) {
-            billingStatus += caseViewItem.usageStatusCode;
-        } else if (caseViewItem.po != undefined && caseViewItem.po != '') {
-            billingStatus += '3';
-        }
-                                          
-                                          /*
-                                           "WO (1-30) - The write up has been provided by Rick early, but to recap what was provided for the usage check marks: the usageStatus field returned for cases has it.
-                                           
-                                           Responses from getCaseHeaders, getCaseDetail1, and getCaseDetailFull all contain a property called usageStatus.
-                                           
-                                           •        If usage has not been entered (no checkmark), this is 0 (zero).
-                                           •        If usage has been entered but usage has not been reordered (blue checkmark), this is 1 (one)
-                                           •        If usage has been entered and usage has been reordered (green checkmark), this is 2 (two)
-                                           
-                                           "
-                                           */
-                                          
-                                          //$.log('PO: ' + JSON.stringify(caseViewItem, null, 4));
 
         var caseViewModelItemInfo = li.format
         (
             caseViewItem.id,
             (caseViewItem.id > 0 ? caseViewItem.id : 1000),
-            String.character_limiter_ellipsis(caseViewItem.patient,20),
-            String.character_limiter_ellipsis(hospitalName,30),   //caseViewItem.hospitalID,
-            String.character_limiter_ellipsis(physicianName,30),
+            caseViewItem.patient,
+            hospitalName,   //caseViewItem.hospitalID,
+            physicianName,
             caseViewItem.dateView,  //caseViewItem.physicianID,
             caseViewItem.hour,
-            String.character_limiter_ellipsis(procTypeName,30),   //caseViewItem.procTypeID,
+            procTypeName,   //caseViewItem.procTypeID,
             caseViewItem.usageStatusCode,
             caseViewItem.usageStatus,
-            billingStatus,
-            '&nbsp;'
+            caseViewItem.noSave
         );
 
         var a = $(caseViewModelItemInfo);
@@ -3464,7 +3456,7 @@ function clearCaseViewDetail()
 function loadCaseViewDetail(caseDetail)
 {
     if (!caseDetail)
-        return;
+        return;    	
 
     $('label.caseDetailListID').html(caseDetail.id);
     $('#lblCaseDetailListCaseType').html((caseDetail.assignedProdSystems.length > 0) ? 'Loaner Case' : 'Info Case');
@@ -3632,18 +3624,7 @@ function saveCaseViewDetail(page, onComplete)
         notes: $('#txtCaseDetailListNotes').val().replace(/\n/gi, ""),
         freight: Number($('#txtPricingFreight').val()),
         totalPrice: Number($('#lblPricingTotal').html())
-    };
-    
-    //## Save Create Preferences
-    // Jesse Turner Feb 6, 2013
-    
-    // if Preference selection, save ProductSystems, Hospital ID, Procedure, Physician using postPhysicianPrefs
-    // if () {}
-        //savePhysicianPrefs()
-        
-    // ! #############
-    //   Use above // Product Systems for Prefs
-    // ! #############
+    };    
 
     // Validation case view detail data.
     if (saveCaseViewDetailValidation(data))
@@ -3659,8 +3640,8 @@ function saveCaseViewDetail(page, onComplete)
         },
         function()
         {
-        	$('#lblError').html('Error');
-            $.alert('Error to save case detail');
+        	var caseIdOff = $('.caseDetailListID').html();
+            $('#caseNoSave').html(caseIdOff);
         });
     }
     else
@@ -3835,96 +3816,6 @@ function conditionLoad()
     }
 }
 
-//## Manipulating Saved Preferences
-// Jesse Turner Feb 6, 2013
-function getPhysicianPrefs()
-{
-    //# Triggered on tapping a selection from Hospital, Procedure, or Physician
-    
-    // If Procedure && Physician
-    var hospitalID = $('#lblCaseDetailListHospital').attr('dataid');
-    var physicianID = $('#lblCaseDetailListPhysician').attr('dataid');
-    var procTypeID = $('#lblCaseDetailListProcedure').attr('dataid');
-    
-    if(!String.isNullOrEmpty(physicianID) && !String.isNullOrEmpty(procTypeID))
-    {
-        // All you have to do is set it to 0!!!!!
-        $('#lblCaseDetailListProductSystemCategory').text('(0)');
-        
-        new physicianPrefs().load(hospitalID, physicianID, procTypeID,
-            function(prefs)
-            {
-                if (!String.isNullOrEmpty(prefs))
-                {
-                    setProductSystemsFromPhysicianPrefs(prefs);
-                }
-            },
-            function()
-            {
-                //$.alert('Sorry no results found');
-            }
-        );
-    }
-}
-
-function setProductSystemsFromPhysicianPrefs(prefs)
-{
-    var name = $('#caseDetailList_procedure ul.rounded li a[dataid='+prefs[0].procTypeID+']').find('label').html();
-    var dataproductcatids = $('#caseDetailList_procedure ul.rounded li a[dataid='+prefs[0].procTypeID+']').attr('dataproductcatids');
-    var catids = dataproductcatids.split(',');
-    
-    for (var i = 0; i < catids.length; i++)
-    {
-        var catid = catids[i];
-        
-        $('#caseDetailList_productsSystemsCategory ul.rounded li a[dataid='+catid+']').attr({'dataproductsselected': prefs[0].productSystems.join(',')})
-    }
-    
-    setProductSystemsCountsFromPhysicianPrefs(prefs[0].procTypeID, prefs[0].productSystems);
-}
-
-function setProductSystemsCountsFromPhysicianPrefs(procTypeID, assignedProdSystems) {
-    conditionLoadProductSystemCategories();
-    
-    // Remove all selected products from product categories
-    $('#caseDetailList_productsSystemsCategory ul.rounded li[isValid] > a').each(function()
-    {
-        $(this).attr('dataproductsselected', '');
-    });
-
-    var assignedProdSystemsCount = 0;
-    
-    // Loop through each product system and category to set selected valid dataproductsselected
-    for (var i = 0; i < assignedProdSystems.length; i++)
-    {
-        var prodSystems = assignedProdSystems[i];
-        
-        if (prodSystems.length > 0 && !isNaN(parseInt(prodSystems)))
-        {
-            $(String.format('#caseDetailList_productsSystemsCategory ul.rounded li[isValid] > a[dataproducts*={0}]', prodSystems)).each(function()
-            {
-                var _this = $(this);
-                var productsSelected = (!String.isNullOrEmpty(_this.attr('dataproductsselected'))) ? _this.attr('dataproductsselected').split(',') : [];
-                
-                productsSelected.push(prodSystems);
-                _this.attr('dataproductsselected', productsSelected.join(','));
-
-                var count = Number(_this.find('span').html().replaceAll('[\(]', '').replaceAll('[\)]', '')) + 1;
-                _this.find('span').html(String.format('({0})', count));
-
-                assignedProdSystemsCount++;
-            });
-        }
-    }
-    
-    $('#lblCaseDetailListProductSystemCategory').text('(' + assignedProdSystemsCount + ')');
-}
-
-function savePhysicianPrefs()
-{
-    // physicianPrefs().save(onSuccess, onError);
-}
-//## End Manipulating Saved Preferences
 
 
 function conditionLoadStatus(list, params)
@@ -3936,7 +3827,6 @@ function conditionLoadProductSystemCategories()
 {
     var categories = [];
     var dataproductcatids = $('#lblCaseDetailListProcedure').attr('dataproductcatids');
-    $.log('Update Product System Categories for Procedure ' + dataproductcatids);
 
     if (dataproductcatids && dataproductcatids.length > 0)
         categories = dataproductcatids.split(',');
@@ -4151,9 +4041,9 @@ function loadPricingUsageEntriesList(caseId, onComplete)
                 <label>Catalog #: \
                     <span role="catalog">{0}</span> \
                 </label> \
-                <small style="font-weight:bold">$	\
-                	<span role="total">{8}</span>	\
-                </small>	\
+                <small style="font-weight:bold">$   \
+                    <span role="total">{8}</span>   \
+                </small>    \
                 <div class="detail"> \
                     <label>Lot Code: \
                         <span role="lotCode">{1}</span> \

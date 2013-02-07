@@ -1,4 +1,4 @@
-// =================================================================
+﻿// =================================================================
 // 	WebOps Data Base [Webkit SQL Storage & Local Storage]
 // 	----------------------------------------------------------------
 // 
@@ -16,23 +16,7 @@
 
 webOps.database =
 {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    version: '1.125',
-=======
     version: '1.130',
->>>>>>> Feb 6 3pm
-=======
-    version: '1.128',
->>>>>>> Revert "Feb 6 3pm"
-=======
-    version: '1.130',
->>>>>>> Revert "Revert "Feb 6 3pm""
-=======
-    version: '1.128',
->>>>>>> Revert "Revert "Revert "Feb 6 3pm"""
     sqlDatabase: null,
     versionSchema:
     {
@@ -80,7 +64,6 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS salesReps(userId INTEGER NOT NULL, salesRepID INTEGER NOT NULL, salesRepName TEXT NOT NULL, warehouseId INT NOT NULL, hospitalIds TEXT, physicianIds TEXT)');
 
                     $.log('CREATE TABLE physicians');
-                    //tx.executeSql('CREATE TABLE IF NOT EXISTS physicians(userId INTEGER NOT NULL, fullName TEXT NOT NULL, id INTEGER NOT NULL, physicianPrefs TEXT, PRIMARY KEY(userId, id))');
                     tx.executeSql('CREATE TABLE IF NOT EXISTS physicians(userId INTEGER NOT NULL, fullName TEXT NOT NULL, id INTEGER NOT NULL, physicianPrefs TEXT)');
 
                     $.log('CREATE TABLE hospitals');
@@ -116,7 +99,7 @@ webOps.database =
                                     decontamination TEXT, eventDesc TEXT, eventLocation TEXT, heightUnits INTEGER, implantRevision TEXT, notReturned TEXT, \
                                     patientHeight INTEGER, patientWeight INTEGER, products TEXT, returned INTEGER, surgicalApproach INTEGER, weightUnits INTEGER, \
                                     caseStatusID INTEGER, dob INTEGER, errorCode INTEGER, freight FLOAT, hospitalID INTEGER, id INTEGER NOT NULL, notes TEXT, patient TEXT, \
-                                    physicianID INTEGER, procDateTime TEXT, procTypeID INTEGER, salesRepID INTEGER, sex TEXT, survey INTEGER, usageStatus INTEGER, usageTimestamp TEXT, \
+                                    physicianID INTEGER, procDateTime TEXT, procTypeID INTEGER, salesRepID INTEGER, sex TEXT, survey INTEGER, usageStatus INTEGER, noSave TEXT, usageTimestamp TEXT, \
                                     timestamp NUMERIC, updateDetail BOOLEAN, PRIMARY KEY(userId, id) )');
 
                     $.log('CREATE TABLE caseDetailFull');
@@ -127,7 +110,7 @@ webOps.database =
                                     ageOfPatient INTEGER, assignedInventoryItems TEXT, assignedKits TEXT, assignedProdSystems TEXT, caseStatusID INTEGER, \
                                     dob INTEGER, errorCode INTEGER, externalItems TEXT, freight FLOAT, hasCapPrice FLOAT, hospitalID INTEGER, id INTEGER NOT NULL, \
                                     notes TEXT, patient TEXT, physicianID INTEGER, po TEXT, procDateTime TEXT, procTypeID INTEGER, salesRepID INTEGER, sex TEXT, \
-                                    survey INTEGER, totalPrice FLOAT, usageStatus INTEGER, usageTimestamp TEXT, usedItems TEXT, \
+                                    survey INTEGER, totalPrice FLOAT, usageStatus INTEGER, usageTimestamp TEXT, usedItems TEXT, noSave TEXT, \
                                     timestamp NUMERIC, PRIMARY KEY(userId, id) )');
 
                     $.log('CREATE TABLE assignedKits');
@@ -146,7 +129,7 @@ webOps.database =
                     tx.executeSql('CREATE TABLE IF NOT EXISTS inventoryCount(userId INTEGER NOT NULL, hospitalID INTEGER NOT NULL, catalog TEXT, lotCode TEXT, committedToServer BOOLEAN, date TEXT)');
 
                     $.log('CREATE TABLE usage');
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS usage(userId INTEGER NOT NULL, caseId INTEGER NOT NULL, catalog TEXT, lotCode TEXT, quantity INTEGER, inventoryLoc TEXT, shipTo TEXT, notes TEXT, unitListPrice FLOAT, unitActualPrice FLOAT, total FLOAT, priceException INT, externalItem BOOLEAN, warehouseId INTEGER, committedToServer BOOLEAN, date TEXT, PRIMARY KEY(userId, caseId, catalog, lotCode))');
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS usage(userId INTEGER NOT NULL, caseId INTEGER NOT NULL, catalog TEXT, lotCode TEXT, inventoryLoc TEXT, shipTo TEXT, notes TEXT, unitListPrice FLOAT, unitActualPrice FLOAT, total FLOAT, priceException INT, committedToServer BOOLEAN, date TEXT)');
 
                 }, function(er) { $.alert(er.message); });
             }
@@ -448,13 +431,10 @@ webOps.database.tables.login =
                 function(tx, data)
                 {
                     $.log('login read successful');
-                    // Jesse Turner Feb 7, 2013
-                    // Added .length check to prevent error
-                    deferred.resolve((data && data.rows && data.rows.length > 0) ? data.rows.item(0) : {});
+                    deferred.resolve((data && data.rows) ? data.rows.item(0) : {});
                 },
                 function()
                 {
-                    $.log('login read error');
                     deferred.reject();
                 }
             );
@@ -815,22 +795,7 @@ webOps.database.tables.caseHeaders =
         return $.Deferred(function(deferred)
         {
             //var sql = 'SELECT userId, modifiedDate, activityDesc, activityLevel, complications, consequences, consequencesDesc, contactName, decontamination, eventDesc, eventLocation, heightUnits, implantRevision, notReturned, patientHeight, patientWeight, products, returned, surgicalApproach, weightUnits, caseStatusID, dob, errorCode, freight, hospitalID, id, notes, patient, physicianID, procDateTime, procTypeID, salesRepID, sex, survey, usageStatus, usageTimestamp, timestamp FROM caseHeaders WHERE userId = ? AND (id LIKE \'%' + filter + '%\' OR hospitalID LIKE \'%' + filter + '%\' OR physicianID LIKE \'%' + filter + '%\' OR procTypeID LIKE \'%' + filter + '%\' OR patient LIKE \'%' + filter + '%\') ORDER BY ' + ((sortBy) ? sortBy : 'timestamp');
-            
-            
 
-            // new (Jesse: Feb 6, 2013 -- added PO from caseDetailFull LEFT JOIN)
-            var sql = 'SELECT C.userId, C.modifiedDate, C.activityDesc, C.activityLevel, C.complications, C.consequences, C.consequencesDesc, C.contactName, C.decontamination, C.eventDesc, C.eventLocation, C.heightUnits, C.implantRevision, C.notReturned, C.patientHeight, C.patientWeight, C.products, C.returned, C.surgicalApproach, C.weightUnits, C.caseStatusID, C.dob, C.errorCode, C.freight, C.hospitalID, C.id, C.notes, C.patient, C.physicianID, C.procDateTime, C.procTypeID, C.salesRepID, C.sex, C.survey, C.usageStatus, C.usageTimestamp, C.timestamp, CDF.po ' +
-                      ' FROM caseHeaders as C ' +
-                      'INNER JOIN hospitals AS H ON C.userId = H.userId AND C.hospitalID = H.id ' +
-                      'INNER JOIN physicians AS P ON C.userId = P.userId AND C.physicianID = P.id ' +
-                      'LEFT JOIN procedures AS PR ON C.userId = PR.userId AND C.procTypeID = PR.id ' +
-                      'LEFT JOIN caseDetailFull AS CDF ON C.id = CDF.id ' +
-                      'WHERE C.userId = ? AND (C.id LIKE \'%' + filter + '%\' OR H.name LIKE \'%' + filter + '%\' OR P.fullName LIKE \'%' + filter + '%\' OR PR.name LIKE \'%' + filter + '%\' OR C.patient LIKE \'%' + filter + '%\') ' +
-                      'AND (C.timestamp >= ' + t1 + ' AND C.timestamp <= ' + t2 + ') ' +
-                      'ORDER BY ' + ((sortBy) ? String(sortBy).replace('_', '.') : 'C.procTypeID');
-                      
-                      
-            /*
             // new (Alex)
             var sql = 'SELECT C.userId, C.modifiedDate, C.activityDesc, C.activityLevel, C.complications, C.consequences, C.consequencesDesc, C.contactName, C.decontamination, C.eventDesc, C.eventLocation, C.heightUnits, C.implantRevision, C.notReturned, C.patientHeight, C.patientWeight, C.products, C.returned, C.surgicalApproach, C.weightUnits, C.caseStatusID, C.dob, C.errorCode, C.freight, C.hospitalID, C.id, C.notes, C.patient, C.physicianID, C.procDateTime, C.procTypeID, C.salesRepID, C.sex, C.survey, C.usageStatus, C.usageTimestamp, C.timestamp ' +
                       ' FROM caseHeaders as C ' +
@@ -839,8 +804,7 @@ webOps.database.tables.caseHeaders =
                       'LEFT JOIN procedures AS PR ON C.userId = PR.userId AND C.procTypeID = PR.id ' +
                       'WHERE C.userId = ? AND (C.id LIKE \'%' + filter + '%\' OR H.name LIKE \'%' + filter + '%\' OR P.fullName LIKE \'%' + filter + '%\' OR PR.name LIKE \'%' + filter + '%\' OR C.patient LIKE \'%' + filter + '%\') ' +
                       'AND (timestamp >= ' + t1 + ' AND timestamp <= ' + t2 + ') ' +
-                      'ORDER BY ' + ((sortBy) ? String(sortBy).replace('_', '.') : 'C.procTypeID');
-            */
+                      'ORDER BY ' + ((sortBy) ? String(sortBy).replace('_', '.') : 'timestamp');
 
             /*
             var sql = 'SELECT C.userId, C.modifiedDate, C.activityDesc, C.activityLevel, C.complications, C.consequences, C.consequencesDesc, C.contactName, C.decontamination, C.eventDesc, C.eventLocation, C.heightUnits, C.implantRevision, C.notReturned, C.patientHeight, C.patientWeight, C.products, C.returned, C.surgicalApproach, C.weightUnits, C.caseStatusID, C.dob, C.errorCode, C.freight, C.hospitalID, C.id, C.notes, C.patient, C.physicianID, C.procDateTime, C.procTypeID, C.salesRepID, C.sex, C.survey, C.usageStatus, C.usageTimestamp, C.timestamp ' +
@@ -1263,12 +1227,12 @@ webOps.database.tables.assignedKits =
 
 webOps.database.tables.usage =
 {
-    save: function(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId)
+    save: function(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            var params = [userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, 0, new Date()];
+            var sql = 'INSERT INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 0, new Date(), espacio];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
@@ -1284,22 +1248,22 @@ webOps.database.tables.usage =
             );
         }).promise();
     },
-    savePricing: function(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId)
+    savePricing: function(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            var params = [userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, 1, new Date()];
+            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            var params = [userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, unitListPrice, unitActualPrice, total, notes, priceException, 1, new Date(), espacio];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
                 {
-                    $.log('usage pricing save successful.');
+                    $.log('usage save successful.');
                     deferred.resolve();
                 },
                 function()
                 {
-                    $.log('usage pricing save error.');
+                    $.log('usage save error.');
                     deferred.reject();
                 }
             );
@@ -1309,9 +1273,9 @@ webOps.database.tables.usage =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, externalItem, warehouseId, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            var sql = 'INSERT OR REPLACE INTO usage(userId, caseId, catalog, lotCode, inventoryLoc, shipTo, unitListPrice, unitActualPrice, total, notes, priceException, committedToServer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             var params = [userId, caseId];
-            var properties = ['catalog', 'lotCode', 'inventoryLoc', 'shipTo', 'unitListPrice', 'unitActualPrice', 'total', 'notes', 'priceException', 'externalItem', 'warehouseId'];
+            var properties = ['catalog', 'lotCode', 'inventoryLoc', 'shipTo', 'unitListPrice', 'unitActualPrice', 'total', 'notes', 'priceException'];
             var customParams = ['1', 'new Date()'];
 
             webOps.database.commands.executeNonQueryMultiple(sql, data, params, properties, customParams,
@@ -1332,7 +1296,7 @@ webOps.database.tables.usage =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT caseId, quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, committedToServer, date FROM usage WHERE userId = ? GROUP BY date, caseId, catalog, lotCode ORDER BY date DESC';
+            var sql = 'SELECT caseId, COUNT(*) quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, committedToServer, date FROM usage WHERE userId = ? GROUP BY date, caseId, catalog, lotCode ORDER BY date DESC';
             var params = [userId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -1377,31 +1341,11 @@ webOps.database.tables.usage =
             );
         }).promise();
     },
-    select: function(userId, caseId, catalog, lotCode)
-    {
-        return $.Deferred(function(deferred)
-        {
-            var sql = 'SELECT userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, warehouseId, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? AND catalog = ? AND lotCode = ?';
-            var params = [userId, caseId, catalog, lotCode];
-
-            webOps.database.commands.executeReader(sql, params,
-                function(tx, data)
-                {
-                    $.log('usage read successful');
-                    deferred.resolve((data.rows.length > 0) ? data.rows.item(0) : {});
-                },
-                function()
-                {
-                    deferred.reject();
-                }
-            );
-        }).promise();
-    },
     selectGroup: function(userId, caseId)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, warehouseId, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? ORDER BY date DESC';
+            var sql = 'SELECT COUNT(*) quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? GROUP BY catalog, lotCode ORDER BY date DESC';
             var params = [userId, caseId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -1428,7 +1372,7 @@ webOps.database.tables.usage =
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'SELECT userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, externalItem, warehouseId, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? AND committedToServer = 1 GROUP BY catalog, lotCode ORDER BY date DESC';
+            var sql = 'SELECT COUNT(*) quantity, catalog, lotCode, inventoryLoc, shipTo, notes, unitListPrice, unitActualPrice, total, priceException, committedToServer, date FROM usage WHERE userId = ? AND caseId = ? AND committedToServer = 1 GROUP BY catalog, lotCode ORDER BY date DESC';
             var params = [userId, caseId];
 
             webOps.database.commands.executeReader(sql, params,
@@ -1493,12 +1437,12 @@ webOps.database.tables.usage =
             );
         }).promise();
     },
-    updateGroupCommitted: function(userId, caseId, externalItem)
+    updateGroupCommitted: function(userId, caseId)
     {
         return $.Deferred(function(deferred)
         {
-            var sql = 'UPDATE usage SET committedToServer = ? WHERE userId = ? AND caseId = ? AND externalItem = ?';
-            var params = [1, userId, caseId, externalItem];
+            var sql = 'UPDATE usage SET committedToServer = ? WHERE userId = ? AND caseId = ?';
+            var params = [1, userId, caseId];
 
             webOps.database.commands.executeNonQuery(sql, params,
                 function()
@@ -2306,7 +2250,6 @@ webOps.database.tables.physicians =
     {
         return $.Deferred(function(deferred)
         {
-            //var sql = 'INSERT OR REPLACE INTO physicians (userId, fullName, id, physicianPrefs) VALUES (?, ?, ?, ?)';
             var sql = 'INSERT INTO physicians (userId, fullName, id, physicianPrefs) VALUES (?, ?, ?, ?)';
             var params = [userId];
             var properties = ['fullName', 'id', 'physicianPrefs'];
@@ -2344,29 +2287,6 @@ webOps.database.tables.physicians =
                     }
 
                     deferred.resolve(items);
-                },
-                function()
-                {
-                    deferred.reject();
-                }
-            );
-        }).promise();
-    },
-    //## Jesse Turner Feb 6, 2013
-    selectPrefs: function(id)
-    {
-        return $.Deferred(function(deferred)
-        {
-            // Limiting the Results to 1 because physicianPrefs should not be tied to Reps (userId), this helps to avoid conflicts in the event that
-            // a physician is assigned to multiple Reps.
-            // This keeps the obligation on the Web Service for providing accurate and up-to-date physicianPrefs.
-            var sql = 'SELECT physicianPrefs FROM physicians WHERE id = ? LIMIT 1';
-            var params = [id];
-
-            webOps.database.commands.executeReader(sql, params,
-                function(tx, data)
-                {
-                    deferred.resolve(data.rows.item(0));
                 },
                 function()
                 {

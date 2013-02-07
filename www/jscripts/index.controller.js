@@ -223,50 +223,7 @@ function login(customer, user, password, onSuccess)
                     if (status == webOps.enums.STATUS_CODE.OK)
                     {
                         var userId = data.userId;
-                        
-                        // Jesse Turner Feb 7, 2013
-                        //## Add Check and Comparison of Login userId to Local Storage userId
-                        // If they don't match, reset and sync.
-                        // Moved webOps.database.tables.login.save() inside of the webOps.database.tables.login.select()
-                        
-                        $.when(
-                            webOps.database.tables.login.select(userId)
-                        )
-                        .done(function(user)
-                        {
-                            $.log('Database User: '+user.userId+'; Login User: '+userId);
-                            if (user.userId != userId)
-                            {
-                                $.log('No match, reset data');
-                              
-                                var isOnline = !$('#ckbAppMode').is(':checked');
-                              
-                                $.when(
-                                    webOps.database.commands.clearDatabase(userId, true)
-                                )
-                                .done(function()
-                                {
-                                    save();
-                                })
-                                .fail(function()
-                                {
-                                    
-                                });
-                            }
-                            else
-                            {
-                                save();
-                            }
-                            
-                            $.executeFunction(onSuccess);
-                        })
-                        .fail(function()
-                        {
-                            alert('userId check fail');
-                        });
-                        
-                        function save() {
-                            $.when(webOps.database.tables.login.save(data.userId, data.sessionId, parameters.join(','), data.build, data.firstName, data.lastName, data.fullName, data.required, ($.isArray(data.roles) ? data.roles.join(',') : data.roles), ($.isArray(data.salesRepIds) ? data.salesRepIds.join(',') : data.salesRepIds)))
+                        $.when(webOps.database.tables.login.save(data.userId, data.sessionId, parameters.join(','), data.build, data.firstName, data.lastName, data.fullName, data.required, ($.isArray(data.roles) ? data.roles.join(',') : data.roles), ($.isArray(data.salesRepIds) ? data.salesRepIds.join(',') : data.salesRepIds)))
                             .done(function()
                             {
                                 webOps.database.tables.currentSession.save(customer, data.userId, data.sessionId);
@@ -277,43 +234,6 @@ function login(customer, user, password, onSuccess)
                             {
                                 alert('Network error: sorry, but the network is not accessible right now. This application will now close since network access is a requirement.');
                             });
-                        }
-                            
-                        /*
-                        $.when(webOps.database.tables.login.select(data.userId))
-                            .done(function(user)
-                            {
-                                $.log('User Info:');
-                                $.log(user);
-                                $.log('Database User: '+user.userId+'; Login User: '+userId);
-                                if (user.userId != userId)
-                                {
-                                    $.log('No match, reset data');
-                                }
-                                //$.alert('OK, login successful');
-                                $.executeFunction(onSuccess);
-                            })
-                            .fail(function()
-                            {
-                                alert('userIds dont match');
-                            });
-                        */
-                        
-                        
-                        
-                        /*
-                        $.when(webOps.database.tables.login.save(data.userId, data.sessionId, parameters.join(','), data.build, data.firstName, data.lastName, data.fullName, data.required, ($.isArray(data.roles) ? data.roles.join(',') : data.roles), ($.isArray(data.salesRepIds) ? data.salesRepIds.join(',') : data.salesRepIds)))
-                        .done(function()
-                        {
-                            webOps.database.tables.currentSession.save(customer, data.userId, data.sessionId);
-                            //$.alert('OK, login successful');
-                            $.executeFunction(onSuccess);
-                        })
-                        .fail(function()
-                        {
-                            alert('Network error: sorry, but the network is not accessible right now. This application will now close since network access is a requirement.');
-                        });
-                        */
                     }
                     else
                     {
@@ -338,7 +258,7 @@ function logout()
     {
         init: function()
         {
-            webOps.database.tables.currentSession.remove();
+            //webOps.database.tables.currentSession.remove();
         }
     });
 }
@@ -476,12 +396,10 @@ function loadingCaseFromTheServer(invokeFrom, dateStart, dateEnd, onSuccess, onE
                 )
                 .done(function()
                 {
-                    $.log('### run this');
                     $.when
                     (
                         webOps.synchronize.fromServer.caseDetailFull(customer, userId, sessionId),
                         webOps.synchronize.fromServer.assignedKits(customer, userId, sessionId)
-                        //webOps.synchronize.fromServer.physicians(customer, userId, sessionId)
                         //webOps.synchronize.fromServer.casePhotoList(customer, userId, sessionId)
                     )
                     .done(function()
@@ -524,6 +442,7 @@ function loadingCaseFromTheServer(invokeFrom, dateStart, dateEnd, onSuccess, onE
         }
     });
 }
+
 
 function imagingFromTheServer(caseId, onSuccess, onError)
 {
@@ -636,111 +555,6 @@ function settings()
                 }
             }
         });
-    },
-    this.resetEverythingAllDataWithoutSession = function(isOnline, deleteCurrentSession, userId)
-    {
-        return $.tryCatch(
-        {
-            init: function()
-            {
-
-                $.when
-                (
-                    webOps.database.commands.clearDatabase(userId, deleteCurrentSession)
-                )
-                .done(function()
-                {
-                    //$.executeFunction(onSuccess);
-                })
-                .fail(function()
-                {
-                    //$.executeFunction(onSuccess);
-                });
-            }
-        });
-    }
-}
-
-function physicianPrefs()
-{
-    this.load = function(hospitalID, physicianID, procTypeID, onSuccess, onError)
-    {
-        return $.tryCatch(
-        {
-            init: function()
-            {
-                //var userId = webOps.database.tables.currentSession.select().userId;
-                
-                $.when
-                (
-                    webOps.database.tables.physicians.selectPrefs(physicianID)
-                )
-                .done(function(prefs)
-                {
-                    $.executeFunction(onSuccess, parse(prefs));
-                })
-                .fail(function()
-                {
-                    $.executeFunction(onError);
-                });
-                
-                function parse(prefsObj)
-                {
-                    var prefsString = prefsObj.physicianPrefs;
-                    var arr = [];
-                    
-                    if (String.isNullOrEmpty(prefsString)) return;
-                    
-                    // Check for comma, if present, split
-                    if ( prefsString.indexOf(',') > -1 )
-                    {
-                        var prefs = prefsString.split(',');
-                    }
-                    else
-                    {
-                        var prefs = [prefsString];
-                    }
-                    
-                    // Check for pipes
-                    for (var i = 0; i < prefs.length; i++)
-                    {
-                        //<PROCEDURE_ID>||<HOSPITAL_ID>||<NOTE>||[<PRODUCT_SYSTEM_ID>||]*
-                        
-                        var pref = prefs[i].split('||');
-                        
-                        // If procedure is our chosen procedure and either our hospital is our chosen hospital or the preference is for all
-                        // hospitals, then add the preference to an array
-                        if (
-                            ( procTypeID && procTypeID == pref[0] ) &&
-                            ( hospitalID == pref[1] || pref[1] == 0 )
-                        ) {
-                            
-                            var obj =
-                            {
-                                procTypeID: pref[0],
-                                hospitalID: pref[1],
-                                note: pref[2],
-                                productSystems: []
-                            };
-                            
-                            for (var p = 3; p < pref.length; p++)
-                            {
-                                obj.productSystems.push(pref[p]);
-                            }
-
-                            arr.push(obj);
-                        }
-                    }
-
-                    return arr;
-                }
-            }
-        });
-        
-    },
-    this.save = function()
-    {
-        // use postPhysicianPrefs method
     }
 }
 
@@ -785,10 +599,8 @@ function caseView()
 
                             var dateView = moment(caseViewHeaderItem.procDateTime,"YYYY||MM||DD").format('MMM DD, YYYY');
                             var procDateTime2 = (caseViewHeaderItem.procDateTime || '').split('||');
-                            var hour = String.format('{0}:{1} {2}', Number(procDateTime2[3]) < 12 ? Number(procDateTime2[3]) : Number(procDateTime2[3]) - 12, procDateTime2[4], (parseInt(procDateTime2[3]) < 12 ? 'AM' : 'PM'));
+                            var hour = String.format('{0}:{1} {2}', Number(procDateTime2[3]) < 12 ? Number(procDateTime2[3]) == 0 ? 12 : Number(procDateTime2[3]) : Number(procDateTime2[3]) - 12 == 0 ? 12 : Number(procDateTime2[3]) - 12 , procDateTime2[4], (parseInt(procDateTime2[3]) < 12 ? 'AM' : 'PM'));
 
-                      //$.log( JSON.stringify(caseViewHeaderItem, null, 4));
-                      
                             var obj =
                             {
                                 id: caseViewHeaderItem.id,
@@ -800,10 +612,8 @@ function caseView()
                                 procTypeID: caseViewHeaderItem.procTypeID,
                                 usageStatusCode: caseViewHeaderItem.caseStatusID,
                                 usageStatus: caseStatusCodesByCode(caseViewHeaderItem.caseStatusID),
-                                po: caseViewHeaderItem.po
+                                noSave: caseViewHeaderItem.noSave
                             };
-                      
-                            //$.log('-- Object[Usage Status]: ' + obj.usageStatus + '; Code: ' + obj.usageStatusCode);
 
                             arr.push(obj);
                         }
@@ -1142,12 +952,20 @@ function caseDetailFull()
                 var currentSessionObj = webOps.database.tables.currentSession.select();
                 var customer = currentSessionObj.customer;
                 var userId = currentSessionObj.userId;
+                var caseId = $('.caseDetailListID').html();
                 var sessionId = currentSessionObj.sessionId;
+                //var errorCode = currentSessionObj.caseStatusID;
                 var modifiedDate = moment(new Date()).format('YYYY||MM||DD||HH||mm');
 
                 if (!String.isNullOrEmpty(caseId) && Number(caseId) > 0)
                 {
-                    $('#lblError').html('');
+                    $.when(webOps.database.tables.caseDetailFull.select(userId, caseId))
+                    .done(function(obj)
+                    {
+                        alert(obj.errorCode);
+                    })
+
+                    //alert(errorCode);
                     $.when
                     (
                         webOps.database.tables.caseDetailFull.update(userId, caseId, data.caseStatusID, data.salesRepID, data.procDateTime, data.hospitalID, data.physicianID, data.procTypeID, data.assignedProdSystems, data.patient, data.dob, data.sex, data.ageOfPatient, data.po, data.notes, data.freight, data.totalPrice),
@@ -1158,7 +976,7 @@ function caseDetailFull()
                         // Validate mode onLine.
                         if (webOps.database.tables.setUp.select().appModeOnLine)
                         {
-                            $('#lblError').html('');
+                            $('#caseNoSave').html('');
 
                             /*var assignedProdSystemsArray = [];
                             var assignedProdSystems = data.assignedProdSystems.split(',');
@@ -1201,49 +1019,7 @@ function caseDetailFull()
                         }
                         else
                         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-                            //alert('offLine');
-                            var caseIdOff = $('.caseDetailListID').html();
-                            $('#caseNoSave').html(caseIdOff);
-                            $('#lblError').html('Error');
-=======
->>>>>>> Feb 6 3pm
                             $.executeFunction(onSuccess);
-=======
-=======
->>>>>>> Revert "Revert "Revert "Feb 6 3pm"""
-                            //alert('offLine');
-                            var caseId = $('.caseDetailListID').html();
-                            var asterisk = '*';
-                            var userId = webOps.database.tables.currentSession.select().userId;
-
-                            $.when(webOps.database.tables.usage.save(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, notes))
-                            .done(function()
-                            {
-                                $.executeFunction(onSuccess);
-                            })
-                            .fail(function()
-                            {
-                                $.executeFunction(onError);
-                            });
-
-
-
-
-                            //var caseIdOff = $('.caseDetailListID').html();
-                            $('#caseNoSave').html(caseIdOff);
-                            $('#lblError').html('Error');
-                            //$.executeFunction(onSuccess);
-<<<<<<< HEAD
->>>>>>> Revert "Feb 6 3pm"
-=======
-                            $.executeFunction(onSuccess);
->>>>>>> Revert "Revert "Feb 6 3pm""
-=======
->>>>>>> Revert "Revert "Revert "Feb 6 3pm"""
                         }
                     })
                     .fail(function()
@@ -1599,7 +1375,7 @@ function usage()
                         }
                     ).length > 0) ? 0 : 1;
 
-                    $.when(webOps.database.tables.usage.save(userId, caseId, catalog, lotCode, quantity, inventoryLoc, shipToLoc, null, null, null, notes, null, externalItem, warehouseId))
+                    $.when(webOps.database.tables.usage.save(userId, caseId, catalog, lotCode, inventoryLoc, shipToLoc, null, null, null, notes, null, externalItem, warehouseId))
                         .done(function()
                         {
                             $.executeFunction(onSuccess);
