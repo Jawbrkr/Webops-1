@@ -16,7 +16,7 @@
 /// <reference path="webops/webops.synchronize.js" />
 //
 // =================================================================
-//
+
 var REQUEST_NUM = 0;
 
 function cancelEvent()
@@ -223,7 +223,50 @@ function login(customer, user, password, onSuccess)
                     if (status == webOps.enums.STATUS_CODE.OK)
                     {
                         var userId = data.userId;
-                        $.when(webOps.database.tables.login.save(data.userId, data.sessionId, parameters.join(','), data.build, data.firstName, data.lastName, data.fullName, data.required, ($.isArray(data.roles) ? data.roles.join(',') : data.roles), ($.isArray(data.salesRepIds) ? data.salesRepIds.join(',') : data.salesRepIds)))
+                        
+                        // Jesse Turner Feb 7, 2013
+                        //## Add Check and Comparison of Login userId to Local Storage userId
+                        // If they don't match, reset and sync.
+                        // Moved webOps.database.tables.login.save() inside of the webOps.database.tables.login.select()
+                        
+                        $.when(
+                            webOps.database.tables.login.select(userId)
+                        )
+                        .done(function(user)
+                        {
+                            $.log('Database User: '+user.userId+'; Login User: '+userId);
+                            if (user.userId != userId)
+                            {
+                                $.log('No match, reset data');
+                              
+                                var isOnline = !$('#ckbAppMode').is(':checked');
+                              
+                                $.when(
+                                    webOps.database.commands.clearDatabase(userId, true)
+                                )
+                                .done(function()
+                                {
+                                    save();
+                                })
+                                .fail(function()
+                                {
+                                    
+                                });
+                            }
+                            else
+                            {
+                                save();
+                            }
+                            
+                            $.executeFunction(onSuccess);
+                        })
+                        .fail(function()
+                        {
+                            alert('userId check fail');
+                        });
+                        
+                        function save() {
+                            $.when(webOps.database.tables.login.save(data.userId, data.sessionId, parameters.join(','), data.build, data.firstName, data.lastName, data.fullName, data.required, ($.isArray(data.roles) ? data.roles.join(',') : data.roles), ($.isArray(data.salesRepIds) ? data.salesRepIds.join(',') : data.salesRepIds)))
                             .done(function()
                             {
                                 webOps.database.tables.currentSession.save(customer, data.userId, data.sessionId);
@@ -234,6 +277,43 @@ function login(customer, user, password, onSuccess)
                             {
                                 alert('Network error: sorry, but the network is not accessible right now. This application will now close since network access is a requirement.');
                             });
+                        }
+                            
+                        /*
+                        $.when(webOps.database.tables.login.select(data.userId))
+                            .done(function(user)
+                            {
+                                $.log('User Info:');
+                                $.log(user);
+                                $.log('Database User: '+user.userId+'; Login User: '+userId);
+                                if (user.userId != userId)
+                                {
+                                    $.log('No match, reset data');
+                                }
+                                //$.alert('OK, login successful');
+                                $.executeFunction(onSuccess);
+                            })
+                            .fail(function()
+                            {
+                                alert('userIds dont match');
+                            });
+                        */
+                        
+                        
+                        
+                        /*
+                        $.when(webOps.database.tables.login.save(data.userId, data.sessionId, parameters.join(','), data.build, data.firstName, data.lastName, data.fullName, data.required, ($.isArray(data.roles) ? data.roles.join(',') : data.roles), ($.isArray(data.salesRepIds) ? data.salesRepIds.join(',') : data.salesRepIds)))
+                        .done(function()
+                        {
+                            webOps.database.tables.currentSession.save(customer, data.userId, data.sessionId);
+                            //$.alert('OK, login successful');
+                            $.executeFunction(onSuccess);
+                        })
+                        .fail(function()
+                        {
+                            alert('Network error: sorry, but the network is not accessible right now. This application will now close since network access is a requirement.');
+                        });
+                        */
                     }
                     else
                     {
@@ -554,6 +634,28 @@ function settings()
                 {
                     webOps.database.tables.historyLogin.save(userId, sessionId);
                 }
+            }
+        });
+    },
+    this.resetEverythingAllDataWithoutSession = function(isOnline, deleteCurrentSession, userId)
+    {
+        return $.tryCatch(
+        {
+            init: function()
+            {
+
+                $.when
+                (
+                    webOps.database.commands.clearDatabase(userId, deleteCurrentSession)
+                )
+                .done(function()
+                {
+                    //$.executeFunction(onSuccess);
+                })
+                .fail(function()
+                {
+                    //$.executeFunction(onSuccess);
+                });
             }
         });
     }

@@ -1,4 +1,4 @@
-﻿// =================================================================
+// =================================================================
 // 	WebOps Data Base [Webkit SQL Storage & Local Storage]
 // 	----------------------------------------------------------------
 // 
@@ -13,7 +13,7 @@
 /// <reference path="webops.tools.js" />
 //
 // =================================================================
-//
+
 webOps.database =
 {
     version: '1.125',
@@ -432,10 +432,13 @@ webOps.database.tables.login =
                 function(tx, data)
                 {
                     $.log('login read successful');
-                    deferred.resolve((data && data.rows) ? data.rows.item(0) : {});
+                    // Jesse Turner Feb 7, 2013
+                    // Added .length check to prevent error
+                    deferred.resolve((data && data.rows && data.rows.length > 0) ? data.rows.item(0) : {});
                 },
                 function()
                 {
+                    $.log('login read error');
                     deferred.reject();
                 }
             );
